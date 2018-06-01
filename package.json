@@ -4,8 +4,10 @@
   "description": "BlockApps Solidity Lib",
   "main": "index.js",
   "scripts": {
-    "test": "npm run test:hashmap",
-    "test:hashmap": "mocha data-structures/hashmap/test/hashmap.test.js --config config.yaml -b"
+    "test": "npm run test:hashmap && npm run test:permission",
+    "test:hashmap": "mocha data-structures/hashmap/test/hashmap.test.js --config config.yaml -b",
+    "test:permission": "mocha auth/permission-manager/test/ --config config.yaml -b",
+    "test:user": "mocha auth/user/test/ --config config.yaml -b"
   },
   "repository": {
     "type": "git",

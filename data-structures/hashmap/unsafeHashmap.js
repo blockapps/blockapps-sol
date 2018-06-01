@@ -4,7 +4,7 @@ const util = ba.common.util;
 const config = ba.common.config;
 
 const contractName = 'UnsafeHashmap';
-const contractFilename = `${process.cwd()}/${config.libPath}/data-structures/hashmap/contracts/UnsafeHashmap.sol`;
+const contractFilename = `${config.libPath}/data-structures/hashmap/contracts/UnsafeHashmap.sol`;
 
 function* uploadContract(admin) {
   const args = {};
