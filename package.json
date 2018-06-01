@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "npm run test:hashmap && npm run test:permission",
-    "test:hashmap": "mocha data-structures/hashmap/test/hashmap.test.js --config config.yaml -b",
-    "test:permission": "mocha auth/permission-manager/test/ --config config.yaml -b",
-    "test:user": "mocha auth/user/test/ --config config.yaml -b"
+    "test:hashmap": "mocha data-structures/hashmap/test/hashmap.test.js --config config.yaml -b --api-debug",
+    "test:permission": "mocha auth/permission-manager/test/ --config config.yaml -b --api-debug",
+    "test:user": "mocha auth/user/test/ --config config.yaml -b --api-debug"
   },
   "repository": {
     "type": "git",
