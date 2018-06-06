@@ -15,7 +15,7 @@ const UserRole = rest.getEnums(`${config.libPath}/auth/user/contracts/UserRole.s
 
 const adminName = util.uid('Admin');
 const adminPassword = '1234';
-const userManagerJs = require('../userManager');
+const userManagerJs = require(`../userManager`);
 
 describe('UserManager tests', function() {
   this.timeout(config.timeout);
@@ -51,7 +51,7 @@ describe('UserManager tests', function() {
   it('Create User - by a random user', function*() {
     const uid = util.uid();
     const args = createUserArgs();
-    const randomUser = yield rest.createUser('User_'+uid, uid);
+    const randomUser = yield rest.createUser('User_'+uid, `${uid}`);
 
     // create user not by the admin - should throw
     yield assert.shouldThrowGen(function*() {
@@ -216,7 +216,7 @@ describe('UserManager tests', function() {
     const buyer = yield contract.createUser(buyerArgs);
     buyer.startingBalance = yield contract.getBalance(buyer.username);
 
-    const supplierArgs = createUserArgs('Supplier', UserRole.PROVIDER);
+    const supplierArgs = createUserArgs('Supplier', UserRole.ADMIN);
     const supplier = yield contract.createUser(supplierArgs);
     supplier.startingBalance = yield contract.getBalance(supplier.username);
 
@@ -240,11 +240,12 @@ describe('UserManager tests', function() {
 // function createUser(address account, string username, bytes32 pwHash, UserRole role) returns (ErrorCodes) {
 function createUserArgs(_name, _role) {
   const uid = util.uid();
-  const role = _role || UserRole.PROVIDER;
+  const role = _role || UserRole.ADMIN;
   const name = _name || 'User_';
   const args = {
+    account: `3db01104b0c639556a3e1757f1ee1f7a1d3541d5`,
     username: name + uid,
-    password: 'Pass_' + uid,
+    password: '1234',
     role: role,
   }
   return args;

@@ -7,6 +7,7 @@ const config = ba.common.config;
 const contractName = 'UserManager';
 const contractFilename = `${config.libPath}/auth/user/contracts/UserManager.sol`;
 
+
 const ErrorCodes = rest.getEnums(`${config.libPath}/exception-handling/ErrorCodes.sol`).ErrorCodes;
 const UserRole = rest.getEnums(`${config.libPath}/auth/user/contracts/UserRole.sol`).UserRole;
 

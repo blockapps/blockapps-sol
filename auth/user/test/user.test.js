@@ -27,7 +27,7 @@ describe('User tests', function() {
     const id = 123;
     const username = util.uid('User'+id);
     const pwHash = util.toBytes32('1234'); // FIXME this is not a hash
-    const role = userJs.UserRole.PROVIDER;
+    const role = userJs.UserRole.ADMIN;
     const account = `3db01104b0c639556a3e1757f1ee1f7a1d3541d5`;
 
     // function User(address _account, string _username, bytes32 _pwHash, uint _id, UserRole _role) {
@@ -53,7 +53,7 @@ describe('User tests', function() {
     const id = new Date().getTime();
     const username = util.uid('User'+id);
     const pwHash = util.toBytes32('1234'); // FIXME this is not a hash
-    const role = userJs.UserRole.PROVIDER;
+    const role = userJs.UserRole.ADMIN;
     const account = `3db01104b0c639556a3e1757f1ee1f7a1d3541d5`;
 
     // function User(address _account, string _username, bytes32 _pwHash, uint _id, UserRole _role) {
@@ -81,7 +81,7 @@ describe('User tests', function() {
     const id = new Date().getTime();
     const username = util.uid('User'+id);
     const pwHash = util.toBytes32('1234'); // FIXME this is not a hash
-    const role = userJs.UserRole.PROVIDER;
+    const role = userJs.UserRole.ADMIN;
     const account = `3db01104b0c639556a3e1757f1ee1f7a1d3541d5`;
 
     // function User(address _account, string _username, bytes32 _pwHash, uint _id, UserRole _role) {
