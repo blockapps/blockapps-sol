@@ -1,63 +1,64 @@
 import "./User.sol";
-import "./UserRole.sol";
-import "../../../exception-handling/ErrorCodes.sol";
-import "../../../misc/Util.sol";
+import "../../../rest/contracts/RestStatus.sol";
+import "../../../collections/hashmap/contracts/Hashmap.sol";
+import "../../../util/contracts/Util.sol";
+
+/**
+* Interface for Gas Deal data contracts
+*/
 
 /**
 * Interface for User data contracts
 */
-contract UserManager is ErrorCodes, Util, UserRole {
-  // creator of the contract
-  address creator;
+contract UserManager is RestStatus, Util {
+  // owner of the contract
+  address owner;
   // users array
-  User[] users;
-  /*
-    note on mapping to array index:
-    a non existing mapping will return 0, so 0 should not be a valid value in a map,
-    otherwise exists() will not work
-  */
-  mapping (bytes32 => uint) usernameToIdMap;
+  Hashmap users;
 
   /**
   * Constructor
   */
-  function UserManager(address _creator) {
-    creator = _creator;
-    users.length = 1; // see above note
+  function UserManager(address _owner) {
+    owner = _owner;
+    users = new Hashmap();
   }
 
-  function exists(string username) returns (bool) {
-    return usernameToIdMap[b32(username)] != 0;
+  function exists(string _username) returns (bool) {
+    return users.contains(_username);
   }
 
-  function getUser(string username) returns (address) {
-    uint userId = usernameToIdMap[b32(username)];
-    return users[userId];
+  function getUser(string _username) returns (address) {
+    return users.get(_username);
   }
 
-  function createUser(address account, string username, bytes32 pwHash, UserRole role) returns (ErrorCodes) {
-    // only creator can execute
-    if (msg.sender != creator) {
-      return (ErrorCodes.UNAUTHORIZED);
+  function createUser(
+    address _account,
+    string _username,
+    bytes32 _pwHash,
+    uint _role) returns (uint, address) {
+    // only owner can execute
+    if (msg.sender != owner) {
+      return (RestStatus.UNAUTHORIZED, 0);
     }
+
     // name must be <= 32 bytes
-    if (bytes(username).length > 32) return ErrorCodes.ERROR;
+    if (bytes(_username).length > 32) return (RestStatus.ERROR, 0);
+    if (_pwHash.length > 32) return (RestStatus.ERROR, 0);
     // fail if username exists
-    if (exists(username)) return (ErrorCodes.EXISTS);
+    if (exists(_username)) return (RestStatus.ERROR, 0);
     // add user
-    uint userId = users.length;
-    usernameToIdMap[b32(username)] = userId;
-    User user = new User(account, username, pwHash, userId, role);
-    users.push(user);
-    return (ErrorCodes.SUCCESS);
+    User user = new User(_account, _username, _pwHash, _role);
+    users.put(_username, user);
+    return (RestStatus.CREATED, user);
   }
 
-  function login(string username, bytes32 pwHash) returns (bool) {
+  function authenticate(string _username, bytes32 _pwHash) returns (bool) {
     // fail if username doesnt exists
-    if (!exists(username)) return false;
+    if (!exists(_username)) return (false);
     // get the user
-    address a = getUser(username);
+    address a = getUser(_username);
     User user = User(a);
-    return user.authenticate(pwHash);
+    return user.authenticate(_pwHash);
   }
 }

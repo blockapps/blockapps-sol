@@ -2,18 +2,18 @@
   "name": "blockapps-sol",
   "version": "1.0.0",
   "description": "BlockApps Solidity Lib",
-  "main": "index.js",
+  "main": "",
   "scripts": {
-    "test": "npm run test:hashmap && npm run test:permission && npm run test:user",
-    "test:hashmap": "mocha data-structures/hashmap/test/hashmap.test.js --config config.yaml -b --api-debug",
+    "test": "find . -type f -name '*.test.js' ! -path './node_modules/*' | xargs mocha ",
+    "test:hashmap": "mocha collections/hashmap/test/hashmap.test.js --config config.yaml -b",
     "test:permission": "mocha auth/permission-manager/test/ --config config.yaml -b --api-debug",
-    "test:user": "mocha auth/user/test/ --config config.yaml -b --api-debug"
+    "test:user": "mocha auth/user/test/ --config config.yaml -b "
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/blockapps/blockapps-sol.git"
   },
-  "author": "BlockApps Inc",
+  "author": "lior@blockapps.net",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/blockapps/blockapps-sol/issues"

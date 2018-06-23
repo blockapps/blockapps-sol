@@ -1,23 +1,22 @@
-import "../../../exception-handling/ErrorCodes.sol";
-import "./UserRole.sol";
 
 /**
  * User data contract
  */
-contract User is ErrorCodes, UserRole {
-  // NOTE: members must be public to be indexed for search
-  address public account = 0x1234;
+contract User {
+  address public account;
   string public username;
   bytes32 public pwHash;
-  uint public id;
-  UserRole public role;
+  uint public role;
 
-  function User(address _account, string _username, bytes32 _pwHash, uint _id, UserRole _role) {
+  // internal
+  uint public updateCounter = 0;
+
+  function User(address _account, string _username, bytes32 _pwHash, uint _role) {
     account = _account;
     username = _username;
     pwHash = _pwHash;
-    id = _id;
     role = _role;
+    updateCounter = 1; // set update counter
   }
 
   function authenticate(bytes32 _pwHash) returns (bool) {

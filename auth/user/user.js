@@ -4,19 +4,19 @@ const util = ba.common.util;
 const config = ba.common.config;
 
 const contractName = 'User';
-const contractFilename = `${config.libPath}/auth/user/contracts/User.sol`;
+const contractFilename = `${ba.common.cwd}/${config.libPath}/auth/user/contracts/User.sol`;
 
-const ErrorCodes = rest.getEnums(`${config.libPath}/exception-handling/ErrorCodes.sol`).ErrorCodes;
+const RestStatus = rest.getFields(`${config.libPath}/rest/contracts/RestStatus.sol`);
 const UserRole = rest.getEnums(`${config.libPath}/auth/user/contracts/UserRole.sol`).UserRole;
 
 function* uploadContract(admin, args) {
   const contract = yield rest.uploadContract(admin, contractName, contractFilename, util.usc(args));
   yield compileSearch(contract);
   contract.src = 'removed';
-  return setContract(admin, contract);
+  return bind(admin, contract);
 }
 
-function setContract(admin, contract) {
+function bind(admin, contract) {
   contract.getState = function* () {
     return yield rest.getState(contract);
   }
@@ -36,20 +36,18 @@ function* compileSearch(contract) {
   yield rest.compileSearch(searchable, contractName, contractFilename);
 }
 
-function* getUsers(addresses) {
+function* getUsers(addresses) { // FIXME must break to batches of 50 addresses
   const csv = util.toCsv(addresses); // generate csv string
   const results = yield rest.query(`${contractName}?address=in.${csv}`);
   return results;
 }
 
-function* getUserById(id) {
-  const baUser = (yield rest.waitQuery(`${contractName}?id=eq.${id}`, 1))[0];
-  return baUser;
+function* getUser(username) {
+  return (yield rest.waitQuery(`${contractName}?username=eq.${username}`, 1))[0];
 }
 
 function* getUserByAddress(address) {
-  const baUser = (yield rest.waitQuery(`${contractName}?address=eq.${address}`, 1))[0];
-  return baUser;
+  return (yield rest.waitQuery(`${contractName}?address=eq.${address}`, 1))[0];
 }
 
 function* authenticate(admin, contract, pwHash) {
@@ -67,17 +65,15 @@ function* authenticate(admin, contract, pwHash) {
 
 module.exports = {
   uploadContract: uploadContract,
+  bind: bind,
   compileSearch: compileSearch,
-  contractName: contractName,
 
   // constants
   contractName: contractName,
-  ErrorCodes: ErrorCodes,
-  UserRole: UserRole,
 
   // business logic
   authenticate: authenticate,
   getUserByAddress: getUserByAddress,
   getUsers: getUsers,
-  getUserById: getUserById,
+  getUser: getUser,
 };

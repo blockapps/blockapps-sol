@@ -4,7 +4,7 @@ const util = ba.common.util;
 const config = ba.common.config;
 
 const contractName = 'Hashmap';
-const contractFilename = `${config.libPath}/data-structures/hashmap/contracts/Hashmap.sol`;
+const contractFilename = `${config.libPath}/collections/hashmap/contracts/Hashmap.sol`;
 
 function* uploadContract(admin) {
   const args = {};

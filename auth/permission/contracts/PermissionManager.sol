@@ -1,4 +1,4 @@
-import "../../../rest/RestStatus.sol";
+import "../../../rest/contracts/RestStatus.sol";
 
 /**
 * Permission Manager for all

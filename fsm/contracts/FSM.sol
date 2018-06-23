@@ -28,6 +28,6 @@ contract FSM {
 
 
     function calculateKey(uint _state, uint _event) returns (uint){
-        return (_state * 100) + _event;
+        return (_state * 1000) + _event;
     }
 }

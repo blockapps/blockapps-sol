@@ -5,8 +5,8 @@ const BigNumber = ba.common.BigNumber;
 const config = ba.common.config;
 
 const contractName = 'PermissionManager';
-const contractFilename = `${config.libPath}/auth/permission-manager/contracts/PermissionManager.sol`;
-const RestStatus = rest.getFields(`${config.libPath}/rest/RestStatus.sol`);
+const contractFilename = `${config.libPath}/auth/permission/contracts/PermissionManager.sol`;
+const RestStatus = rest.getFields(`${config.libPath}/rest/contracts/RestStatus.sol`);
 
 
 function* uploadContract(admin, master) {
