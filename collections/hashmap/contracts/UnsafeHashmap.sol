@@ -1,4 +1,4 @@
-import "../../../misc/Util.sol";
+import "../../../util/contracts/Util.sol";
 
 contract UnsafeHashmap is Util {
 
