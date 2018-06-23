@@ -10,15 +10,19 @@ const constants = common.constants;
 const BigNumber = common.BigNumber;
 const Promise = common.Promise;
 
-const ErrorCodes = rest.getEnums(`${config.libPath}/exception-handling/ErrorCodes.sol`).ErrorCodes;
+const ErrorCodes = rest.getEnums(`${config.libPath}/error/ErrorCodes.sol`).ErrorCodes;
+const RestStatus = rest.getFields(`${config.libPath}/rest/contracts/RestStatus.sol`);
 const UserRole = rest.getEnums(`${config.libPath}/auth/user/contracts/UserRole.sol`).UserRole;
 
 const adminName = util.uid('Admin');
 const adminPassword = '1234';
-const userManagerJs = require(`../userManager`);
+const userManagerJs = require('../userManager');
+const factory = require('./user.factory');
 
 describe('UserManager LOAD tests', function() {
   this.timeout(config.timeout);
+
+  const count = util.getArgInt('--count', 4);
 
   let admin;
   let contract;
@@ -29,15 +33,15 @@ describe('UserManager LOAD tests', function() {
     contract = yield userManagerJs.uploadContract(admin);
   });
 
-  it.skip('User address leading zeros - load test - skipped', function *() {
+  it('User address leading zeros - load test - count:' + count, function *() {
     this.timeout(60*60*1000);
 
-    const count = 16*4; // leading 0 once every 16
     const users = [];
+    const uid = util.uid() * 100;
+    const accountAddress = 1234500;
     // create users
     for (let i = 0; i < count; i++) {
-      const name = `User_${i}_`;
-      const args = createUserArgs(name);
+      const args = factory.createUserArgs(accountAddress+i, uid+i);
       const user = yield contract.createUser(args);
       users.push(user);
     }
@@ -54,16 +58,3 @@ describe('UserManager LOAD tests', function() {
     assert.equal(notFound.length, 0, JSON.stringify(notFound));
   });
 });
-
-// function createUser(address account, string username, bytes32 pwHash, UserRole role) returns (ErrorCodes) {
-function createUserArgs(_name, _role) {
-  const uid = util.uid();
-  const role = _role || UserRole.ADMIN;
-  const name = _name || 'User_';
-  const args = {
-    username: name + uid,
-    password: 'Pass_' + uid,
-    role: role,
-  }
-  return args;
-}

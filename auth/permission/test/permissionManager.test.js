@@ -16,7 +16,7 @@ const masterName = util.uid('Master');
 const masterPassword = '5678';
 
 const permissionManagerJs = require('../permissionManager');
-const RestStatus = rest.getFields(`${config.libPath}/rest/RestStatus.sol`);
+const RestStatus = rest.getFields(`${config.libPath}/rest/contracts/RestStatus.sol`);
 
 describe('PermissionManager tests', function() {
   this.timeout(config.timeout);
