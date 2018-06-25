@@ -51,11 +51,11 @@ function bind(admin, contract) {
   return contract;
 }
 
-// throws: ErrorCodes
+// throws: RestStatus
 // returns: updated permissions
 function* grant(admin, contract, args) {
   rest.verbose('grant', args);
-  // function grant(address _address, uint _permissions) returns (ErrorCodes) {
+  // function grant(address _address, uint _permissions) returns (RestStatus) {
   const method = 'grant';
   const [restStatus, permissions] = yield rest.callMethod(admin, contract, method, util.usc(args));
   if (restStatus != RestStatus.OK) {
@@ -64,11 +64,11 @@ function* grant(admin, contract, args) {
   return permissions;
 }
 
-// throws: ErrorCodes
+// throws: RestStatus
 // returns: permissions
 function* getPermissions(admin, contract, args) {
   rest.verbose('getPermissions', args);
-  // function getPermissions(address _address) returns (ErrorCodes, uint) {
+  // function getPermissions(address _address) returns (RestStatus, uint) {
   const method = 'getPermissions';
   const [restStatus, permissions] = yield rest.callMethod(admin, contract, method, util.usc(args));
   if (restStatus != RestStatus.OK) {
@@ -77,11 +77,11 @@ function* getPermissions(admin, contract, args) {
   return permissions;
 }
 
-// throws: ErrorCodes
+// throws: RestStatus
 // returns: true if permitted
 function* check(admin, contract, args) {
   rest.verbose('check', args);
-  // function check(address _address, uint _permissions) returns (ErrorCodes) {
+  // function check(address _address, uint _permissions) returns (RestStatus) {
   const method = 'check';
   const [restStatus] = yield rest.callMethod(admin, contract, method, util.usc(args));
   if (restStatus != RestStatus.OK) {
@@ -90,10 +90,10 @@ function* check(admin, contract, args) {
   return true;
 }
 
-// throws: ErrorCodes
+// throws: RestStatus
 function* revoke(admin, contract, args) {
   rest.verbose('revoke', args);
-  // function revoke(address _address) returns (ErrorCodes) {
+  // function revoke(address _address) returns (RestStatus) {
   const method = 'revoke';
   const [restStatus] = yield rest.callMethod(admin, contract, method, util.usc(args));
   if (restStatus != RestStatus.OK) {

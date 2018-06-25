@@ -10,7 +10,6 @@ const constants = common.constants;
 const BigNumber = common.BigNumber;
 const Promise = common.Promise;
 
-const ErrorCodes = rest.getEnums(`${config.libPath}/error/ErrorCodes.sol`).ErrorCodes;
 const RestStatus = rest.getFields(`${config.libPath}/rest/contracts/RestStatus.sol`);
 const UserRole = rest.getEnums(`${config.libPath}/auth/user/contracts/UserRole.sol`).UserRole;
 

@@ -60,7 +60,7 @@ function* compileSearch(contract) {
 function* createUser(admin, contract, args) {
   rest.verbose('createUser', args);
 
-  // function createUser(address account, string username, bytes32 pwHash, uint role) returns (ErrorCodes) {
+  // function createUser(address account, string username, bytes32 pwHash, uint role) returns (RestStatus, address) {
   const method = 'createUser';
 
   // create the user, with the eth account
