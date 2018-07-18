@@ -1,4 +1,4 @@
-import "../../../util/contracts/Util.sol";
+import "/util/contracts/Util.sol";
 
 contract UnsafeHashmap is Util {
 
@@ -40,5 +40,18 @@ contract UnsafeHashmap is Util {
 
   function size() public constant returns (uint) {
     return values.length -1; // not counting entry 0
+  }
+
+  function remove(string _key) public {
+    uint index = keyMap[b32(_key)];
+    if (index == 0) return;
+    // remove the index mapping
+    keyMap[b32(_key)] = 0;
+    // remove the value
+    values[index] = 0;
+    // remove the key
+    if (isIterable) {
+      delete keys[index];
+    }
   }
 }
