@@ -24,6 +24,7 @@ contract PermissionManager is RestStatus {
     uint blockTimestamp;
     // event
     uint eventType;
+    string id;
     address adrs;
     uint permissions;
     uint result;
@@ -70,7 +71,7 @@ contract PermissionManager is RestStatus {
     return addressToIndexMap[_address] != 0;
   }
 
-  function grant(string _id, address _address, uint _permissions) public returns (uint, uint) {
+  function grantImpl(string _id, address _address, uint _permissions) public returns (uint, uint) {
     // authorize owner
     if (msg.sender != owner) {
       return (RestStatus.UNAUTHORIZED, 0);
@@ -92,6 +93,23 @@ contract PermissionManager is RestStatus {
       permits[index] = permit;
     }
     return (RestStatus.OK, permit.permissions);
+  }
+
+  function grant(string _id, address _address, uint _permissions) public returns (uint, uint) {
+    var(restStatus, permitPermissions) = grantImpl(_id, _address, _permissions);
+    EventLogEntry memory eventLogEntry = EventLogEntry(
+    // meta
+      msg.sender,
+      block.timestamp,
+    // event
+      uint(EventLogType.GRANT),
+      _id,
+      _address,
+      _permissions,
+      restStatus
+    );
+    eventLog.push(eventLogEntry);
+    return (restStatus, permitPermissions);
   }
 
   function revoke(address _address) public returns (uint) {
@@ -142,6 +160,7 @@ contract PermissionManager is RestStatus {
       block.timestamp,
       // event
       uint(EventLogType.CHECK),
+      '',
       _address,
       _permissions,
       result

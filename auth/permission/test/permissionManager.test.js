@@ -240,7 +240,7 @@ describe('PermissionManager tests', function() {
       yield contract.check(args)
       // event log
       const { eventLog } = yield contract.getState()
-      assert.equal(eventLog.length, 0, 'not logged')
+      assert.equal(eventLog.length, 1, 'not logged')
     }
     // check unauthorized
     {
@@ -248,16 +248,37 @@ describe('PermissionManager tests', function() {
       yield contract.check(args)
       // event log
       const { eventLog } = yield contract.getState()
-      assert.equal(eventLog.length, 1, 'one entry')
-      const eventLogEntry = eventLog[0];
+      assert.equal(eventLog.length, 2, 'one entry')
+      const eventLogEntry = eventLog[1];
       assert.equal(eventLogEntry.msgSender, admin.address, 'msg sender')
       assert.isDefined(eventLogEntry.blockTimestamp, 'timestamp')
       assert.equal(eventLogEntry.eventType, EventLogType.CHECK, 'type')
+      assert.equal(eventLogEntry.id, '', 'id')
       assert.equal(eventLogEntry.adrs, args.address, 'address')
       assert.equal(eventLogEntry.permissions, args.permissions, 'permissions')
       assert.equal(eventLogEntry.result, RestStatus.UNAUTHORIZED, 'result')
     }
   })
+
+  it('EventLog - Grant', function* () {
+    const contract = yield permissionManagerJs.uploadContract(admin, master)
+
+    const uid = util.uid()
+    const args = yield createPermitArgs(uid)
+    yield contract.grant(args)
+    // event log
+    const { eventLog } = yield contract.getState()
+    assert.equal(eventLog.length, 1, 'one entry')
+    const eventLogEntry = eventLog[0];
+    assert.equal(eventLogEntry.msgSender, admin.address, 'msg sender')
+    assert.isDefined(eventLogEntry.blockTimestamp, 'timestamp')
+    assert.equal(eventLogEntry.eventType, EventLogType.GRANT, 'type')
+    assert.equal(eventLogEntry.id, args.id, 'id')
+    assert.equal(eventLogEntry.adrs, args.address, 'address')
+    assert.equal(eventLogEntry.permissions, args.permissions, 'permissions')
+    assert.equal(eventLogEntry.result, RestStatus.OK, 'result')
+  })
+
 })
 
 
@@ -266,9 +287,9 @@ function* createPermitArgs(uid) {
   const permissions = 0x3
 
   const args = {
-    id: 'ID_' + uid,
+    id: `ID_${uid}`,
     address: user.address,
-    permissions: permissions,
+    permissions,
   }
   return args
 }
