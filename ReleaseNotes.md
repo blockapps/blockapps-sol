@@ -6,6 +6,8 @@
    * `grant` permissions to an address
    * `revoke` permissions of an address
    * `check` that resulted an _Unauthorized_ response
+* `Hashmap` now supports `remove`
+   * Note: the removed key will not exist anymore, however, the address array is not compacted. As a result, `size` will reflect the number of active and deleted entries.
 
 ------------
 
