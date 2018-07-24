@@ -17,8 +17,19 @@ contract PermissionManager is RestStatus {
   }
   Permit[] permits;
 
-  // audit history
-  address[] history;
+  // event log entry
+  struct EventLogEntry {
+    // meta
+    address msgSender;
+    uint blockTimestamp;
+    // event
+    uint adrs;
+    uint permissions;
+    uint response;
+  }
+
+  // event log
+  EventLogEntry[] eventLog;
 
   /*
     note on mapping to array index:
@@ -92,7 +103,6 @@ contract PermissionManager is RestStatus {
   }
 
   function getPermissions(address _address) public returns (uint, uint) {
-    history.push(_address);
     // error if address doesnt exists
     if (!exists(_address)) {
       return (RestStatus.NOT_FOUND, 0);
@@ -102,7 +112,6 @@ contract PermissionManager is RestStatus {
   }
 
   function check(address _address, uint _permissions) public returns (uint) {
-    history.push(_address);
     // error if address doesnt exists
     if (!exists(_address)) {
       return (RestStatus.NOT_FOUND);

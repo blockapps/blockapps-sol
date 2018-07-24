@@ -1,35 +1,28 @@
 require('co-mocha');
 const ba = require('blockapps-rest');
-const rest = ba.rest;
-const common = ba.common;
-const config = common.config;
-const util = common.util;
-const should = common.should;
-const assert = common.assert;
-const constants = common.constants;
-const BigNumber = common.BigNumber;
-const Promise = common.Promise;
+
+const { rest } = ba;
+const { config, util, assert, cwd } = ba.common;
+
+const permissionManagerJs = require('../permissionManager');
+const RestStatus = rest.getFields(`${cwd}/rest/contracts/RestStatus.sol`);
 
 const adminName = util.uid('Admin');
 const adminPassword = '1234';
 const masterName = util.uid('Master');
 const masterPassword = '5678';
 
-const permissionManagerJs = require('../permissionManager');
-const RestStatus = rest.getFields(`${config.libPath}/rest/contracts/RestStatus.sol`);
-
 describe('PermissionManager tests', function() {
   this.timeout(config.timeout);
 
   let admin, master;
-  let contract;
 
   // get ready:  admin-user and manager-contract
   before(function*() {
     console.log('creating admin');
     admin = yield rest.createUser(adminName, adminPassword);
     console.log('creating master');
-    master = yield rest.createUser(adminName, adminPassword);
+    master = yield rest.createUser(masterName, masterPassword);
   });
 
   it('Grant (address with permissions)', function*() {
@@ -92,7 +85,7 @@ describe('PermissionManager tests', function() {
     }, RestStatus.NOT_FOUND);
   });
 
-  it('Get permit - history', function*() {
+  it.skip('Get permit - history', function*() {
     const contract = yield permissionManagerJs.uploadContract(admin, master);
 
     const uid = util.uid();
