@@ -12,6 +12,8 @@ const adminPassword = '1234'
 const masterName = util.uid('Master')
 const masterPassword = '5678'
 
+const { EventLogType } = rest.getEnums(`${cwd}/auth/permission/contracts/PermissionManager.sol`);
+
 describe('PermissionManager tests', function() {
   this.timeout(config.timeout)
 
@@ -128,7 +130,7 @@ describe('PermissionManager tests', function() {
     const isPermitted = yield contract.check(args)
     assert.equal(isPermitted, true, 'permitted')
     {
-      const args = { address: permitArgs.address, permissions: ~permitArgs.permissions }
+      const args = { address: permitArgs.address, permissions: 0xFF }
       const isPermitted = yield contract.check(args)
       assert.equal(isPermitted, false, 'NOT permitted')
     }
@@ -250,6 +252,7 @@ describe('PermissionManager tests', function() {
       const eventLogEntry = eventLog[0];
       assert.equal(eventLogEntry.msgSender, admin.address, 'msg sender')
       assert.isDefined(eventLogEntry.blockTimestamp, 'timestamp')
+      assert.equal(eventLogEntry.eventType, EventLogType.CHECK, 'type')
       assert.equal(eventLogEntry.adrs, args.address, 'address')
       assert.equal(eventLogEntry.permissions, args.permissions, 'permissions')
       assert.equal(eventLogEntry.result, RestStatus.UNAUTHORIZED, 'result')

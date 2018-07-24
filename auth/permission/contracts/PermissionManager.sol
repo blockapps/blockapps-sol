@@ -23,6 +23,7 @@ contract PermissionManager is RestStatus {
     address msgSender;
     uint blockTimestamp;
     // event
+    uint eventType;
     address adrs;
     uint permissions;
     uint result;
@@ -140,6 +141,7 @@ contract PermissionManager is RestStatus {
       msg.sender,
       block.timestamp,
       // event
+      uint(EventLogType.CHECK),
       _address,
       _permissions,
       result
