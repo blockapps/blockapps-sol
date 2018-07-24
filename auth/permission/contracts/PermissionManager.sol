@@ -23,9 +23,9 @@ contract PermissionManager is RestStatus {
     address msgSender;
     uint blockTimestamp;
     // event
-    uint adrs;
+    address adrs;
     uint permissions;
-    uint response;
+    uint result;
   }
 
   // event log
@@ -102,7 +102,7 @@ contract PermissionManager is RestStatus {
     return (RestStatus.OK);
   }
 
-  function getPermissions(address _address) public returns (uint, uint) {
+  function getPermissions(address _address) public constant returns (uint, uint) {
     // error if address doesnt exists
     if (!exists(_address)) {
       return (RestStatus.NOT_FOUND, 0);
@@ -111,7 +111,7 @@ contract PermissionManager is RestStatus {
     return (RestStatus.OK, permits[index].permissions);
   }
 
-  function check(address _address, uint _permissions) public returns (uint) {
+  function checkImpl(address _address, uint _permissions) public constant returns (uint) {
     // error if address doesnt exists
     if (!exists(_address)) {
       return (RestStatus.NOT_FOUND);
@@ -124,5 +124,21 @@ contract PermissionManager is RestStatus {
     }
     return (RestStatus.OK);
   }
+
+  function check(address _address, uint _permissions) public constant returns (uint) {
+    uint result = checkImpl(_address, _permissions);
+    EventLogEntry memory eventLogEntry = EventLogEntry(
+      // meta
+      msg.sender,
+      block.timestamp,
+      // event
+      _address,
+      _permissions,
+      result
+    );
+    eventLog.push(eventLogEntry);
+    return (result);
+  }
+
 
 }

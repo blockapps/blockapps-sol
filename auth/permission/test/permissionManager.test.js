@@ -25,6 +25,13 @@ describe('PermissionManager tests', function() {
     master = yield rest.createUser(masterName, masterPassword)
   })
 
+  it('upload', function* () {
+    const contract = yield permissionManagerJs.uploadContract(admin, master)
+    const { eventLog } = yield contract.getState()
+    assert.isDefined(eventLog, 'eventLog')
+    assert.equal(eventLog.length, 0, 'empty')
+  })
+
   it('Grant (address with permissions)', function* () {
     const contract = yield permissionManagerJs.uploadContract(admin, master)
 
@@ -218,7 +225,28 @@ describe('PermissionManager tests', function() {
       assert.equal(restStatus, RestStatus.UNAUTHORIZED, 'should fail')
     }
   })
+
+  it('EventLog - Check permissions', function* () {
+    const contract = yield permissionManagerJs.uploadContract(admin, master)
+
+    const uid = util.uid()
+    const permitArgs = yield createPermitArgs(uid)
+    yield contract.grant(permitArgs)
+    // check
+    const args = { address: permitArgs.address, permissions: permitArgs.permissions }
+    const isPermitted = yield contract.check(args)
+    // event log
+    const { eventLog } = yield contract.getState()
+    assert.equal(eventLog.length, 1, 'one entry')
+    const eventLogEntry = eventLog[0];
+    assert.equal(eventLogEntry.msgSender, admin.address, 'msg sender')
+    assert.isDefined(eventLogEntry.blockTimestamp, 'timestamp')
+    assert.equal(eventLogEntry.adrs, args.address, 'address')
+    assert.equal(eventLogEntry.permissions, args.permissions, 'permissions')
+    assert.equal(eventLogEntry.result, RestStatus.OK, 'result')
+  })
 })
+
 
 function* createPermitArgs(uid) {
   const user = yield rest.createUser(uid, uid)
