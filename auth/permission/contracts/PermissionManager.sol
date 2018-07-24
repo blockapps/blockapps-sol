@@ -12,7 +12,7 @@ contract PermissionManager is RestStatus {
   // addresses and their permissions
   struct Permit {
     string id;
-    address _address;
+    address adrs;
     uint permissions;
   }
   Permit[] permits;

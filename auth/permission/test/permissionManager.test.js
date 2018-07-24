@@ -34,7 +34,7 @@ describe('PermissionManager tests', function() {
     assert.equal(permissions, args.permissions, 'permissions added')
     const state = yield contract.getState()
     const permit = state.permits[1]
-    assert.equal(permit._address, args.address, ' address in array')
+    assert.equal(permit.adrs, args.address, ' address in array')
     assert.equal(permit.permissions, args.permissions, ' permissions in array')
     assert.equal(permit.id, args.id, 'id in array')
   })
