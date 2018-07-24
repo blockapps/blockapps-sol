@@ -12,13 +12,34 @@ contract PermissionManager is RestStatus {
   // addresses and their permissions
   struct Permit {
     string id;
-    address _address;
+    address adrs;
     uint permissions;
   }
   Permit[] permits;
 
-  // audit history
-  address[] history;
+  // event log entry
+  struct EventLogEntry {
+    // meta
+    address msgSender;
+    uint blockTimestamp;
+    // event
+    uint eventType;
+    string id;
+    address adrs;
+    uint permissions;
+    uint result;
+  }
+
+  // event log type
+  enum EventLogType {
+    NULL,
+    GRANT,
+    REVOKE,
+    CHECK
+  }
+
+  // event log
+  EventLogEntry[] eventLog;
 
   /*
     note on mapping to array index:
@@ -50,7 +71,18 @@ contract PermissionManager is RestStatus {
     return addressToIndexMap[_address] != 0;
   }
 
-  function grant(string _id, address _address, uint _permissions) public returns (uint, uint) {
+  function getPermissions(address _address) public constant returns (uint, uint) {
+    // error if address doesnt exists
+    if (!exists(_address)) {
+      return (RestStatus.NOT_FOUND, 0);
+    }
+    // got permissions
+    uint index = addressToIndexMap[_address];
+    return (RestStatus.OK, permits[index].permissions);
+  }
+
+
+  function _grant(string _id, address _address, uint _permissions) private returns (uint, uint) {
     // authorize owner
     if (msg.sender != owner) {
       return (RestStatus.UNAUTHORIZED, 0);
@@ -74,7 +106,26 @@ contract PermissionManager is RestStatus {
     return (RestStatus.OK, permit.permissions);
   }
 
-  function revoke(address _address) public returns (uint) {
+  function grant(string _id, address _address, uint _permissions) public returns (uint, uint) {
+    // call grant
+    var(restStatus, permitPermissions) = _grant(_id, _address, _permissions);
+    // log the results
+    EventLogEntry memory eventLogEntry = EventLogEntry(
+    // meta
+      msg.sender,
+      block.timestamp,
+    // event
+      uint(EventLogType.GRANT),
+      _id,
+      _address,
+      _permissions,
+      restStatus
+    );
+    eventLog.push(eventLogEntry);
+    return (restStatus, permitPermissions);
+  }
+
+  function _revoke(address _address) private returns (uint) {
     // authorize owner
     if (msg.sender != owner) {
       return (RestStatus.UNAUTHORIZED);
@@ -91,18 +142,26 @@ contract PermissionManager is RestStatus {
     return (RestStatus.OK);
   }
 
-  function getPermissions(address _address) public returns (uint, uint) {
-    history.push(_address);
-    // error if address doesnt exists
-    if (!exists(_address)) {
-      return (RestStatus.NOT_FOUND, 0);
-    }
-    uint index = addressToIndexMap[_address];
-    return (RestStatus.OK, permits[index].permissions);
+  function revoke(address _address) public returns (uint) {
+    // call revoke
+    uint result = _revoke(_address);
+    // log the result
+    EventLogEntry memory eventLogEntry = EventLogEntry(
+    // meta
+      msg.sender,
+      block.timestamp,
+    // event
+      uint(EventLogType.REVOKE),
+      '',
+      _address,
+      0,
+      result
+    );
+    eventLog.push(eventLogEntry);
+    return (result);
   }
 
-  function check(address _address, uint _permissions) public returns (uint) {
-    history.push(_address);
+  function _check(address _address, uint _permissions) private constant returns (uint) {
     // error if address doesnt exists
     if (!exists(_address)) {
       return (RestStatus.NOT_FOUND);
@@ -110,10 +169,30 @@ contract PermissionManager is RestStatus {
     // check
     uint index = addressToIndexMap[_address];
     Permit permit = permits[index];
-    if (permit.permissions & _permissions == 0) {
+    if (permit.permissions & _permissions != _permissions) {
       return (RestStatus.UNAUTHORIZED);
     }
     return (RestStatus.OK);
   }
 
+  function check(address _address, uint _permissions) public constant returns (uint) {
+    // call check
+    uint result = _check(_address, _permissions);
+    // log the result
+    if (result != RestStatus.OK) {
+      EventLogEntry memory eventLogEntry = EventLogEntry(
+      // meta
+        msg.sender,
+        block.timestamp,
+      // event
+        uint(EventLogType.CHECK),
+        '',
+        _address,
+        _permissions,
+        result
+      );
+      eventLog.push(eventLogEntry);
+    }
+    return (result);
+  }
 }

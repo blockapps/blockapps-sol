@@ -1,4 +1,13 @@
 
+### Version: 1.1.0
+
+#### Minor upgrades
+* `PermissionManager` now logs the following events: 
+   * `grant` permissions to an address
+   * `revoke` permissions of an address
+   * `check` that resulted an _Unauthorized_ response
+
+------------
 
 ### Version: 0.0.0
 * semver https://semver.org/
