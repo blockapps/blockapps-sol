@@ -279,6 +279,29 @@ describe('PermissionManager tests', function() {
     assert.equal(eventLogEntry.result, RestStatus.OK, 'result')
   })
 
+  it('EventLog - Revoke', function* () {
+    const contract = yield permissionManagerJs.uploadContract(admin, master)
+
+    const uid = util.uid()
+    const permitArgs = yield createPermitArgs(uid)
+    yield contract.grant(permitArgs)
+    // revoke
+    {
+      const args = { address: permitArgs.address }
+      yield contract.revoke(args)
+    }
+    // event log
+    const { eventLog } = yield contract.getState()
+    assert.equal(eventLog.length, 2, 'two entries')
+    const eventLogEntry = eventLog[1];
+    assert.equal(eventLogEntry.msgSender, admin.address, 'msg sender')
+    assert.isDefined(eventLogEntry.blockTimestamp, 'timestamp')
+    assert.equal(eventLogEntry.eventType, EventLogType.REVOKE, 'type')
+    assert.equal(eventLogEntry.id, '', 'id')
+    assert.equal(eventLogEntry.adrs, permitArgs.address, 'address')
+    assert.equal(eventLogEntry.permissions, 0, 'permissions')
+    assert.equal(eventLogEntry.result, RestStatus.OK, 'result')
+  })
 })
 
 

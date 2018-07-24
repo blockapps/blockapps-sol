@@ -51,7 +51,7 @@ contract PermissionManager is RestStatus {
   /**
   * Constructor
   */
-  function PermissionManager(address _owner, address _master) {
+  constructor(address _owner, address _master) {
     owner = _owner;
     master = _master;
     permits.length = 1; // see above note
@@ -71,7 +71,18 @@ contract PermissionManager is RestStatus {
     return addressToIndexMap[_address] != 0;
   }
 
-  function grantImpl(string _id, address _address, uint _permissions) public returns (uint, uint) {
+  function getPermissions(address _address) public constant returns (uint, uint) {
+    // error if address doesnt exists
+    if (!exists(_address)) {
+      return (RestStatus.NOT_FOUND, 0);
+    }
+    // got permissions
+    uint index = addressToIndexMap[_address];
+    return (RestStatus.OK, permits[index].permissions);
+  }
+
+
+  function _grant(string _id, address _address, uint _permissions) private returns (uint, uint) {
     // authorize owner
     if (msg.sender != owner) {
       return (RestStatus.UNAUTHORIZED, 0);
@@ -96,7 +107,7 @@ contract PermissionManager is RestStatus {
   }
 
   function grant(string _id, address _address, uint _permissions) public returns (uint, uint) {
-    var(restStatus, permitPermissions) = grantImpl(_id, _address, _permissions);
+    var(restStatus, permitPermissions) = _grant(_id, _address, _permissions);
     EventLogEntry memory eventLogEntry = EventLogEntry(
     // meta
       msg.sender,
@@ -112,7 +123,7 @@ contract PermissionManager is RestStatus {
     return (restStatus, permitPermissions);
   }
 
-  function revoke(address _address) public returns (uint) {
+  function _revoke(address _address) private returns (uint) {
     // authorize owner
     if (msg.sender != owner) {
       return (RestStatus.UNAUTHORIZED);
@@ -129,16 +140,24 @@ contract PermissionManager is RestStatus {
     return (RestStatus.OK);
   }
 
-  function getPermissions(address _address) public constant returns (uint, uint) {
-    // error if address doesnt exists
-    if (!exists(_address)) {
-      return (RestStatus.NOT_FOUND, 0);
-    }
-    uint index = addressToIndexMap[_address];
-    return (RestStatus.OK, permits[index].permissions);
+  function revoke(address _address) public returns (uint) {
+    uint result = _revoke(_address);
+    EventLogEntry memory eventLogEntry = EventLogEntry(
+      // meta
+      msg.sender,
+      block.timestamp,
+      // event
+      uint(EventLogType.REVOKE),
+      '',
+      _address,
+      0,
+      result
+    );
+    eventLog.push(eventLogEntry);
+    return (result);
   }
 
-  function checkImpl(address _address, uint _permissions) public constant returns (uint) {
+  function _check(address _address, uint _permissions) private constant returns (uint) {
     // error if address doesnt exists
     if (!exists(_address)) {
       return (RestStatus.NOT_FOUND);
@@ -153,7 +172,7 @@ contract PermissionManager is RestStatus {
   }
 
   function check(address _address, uint _permissions) public constant returns (uint) {
-    uint result = checkImpl(_address, _permissions);
+    uint result = _check(_address, _permissions);
     EventLogEntry memory eventLogEntry = EventLogEntry(
       // meta
       msg.sender,
