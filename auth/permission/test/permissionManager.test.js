@@ -232,18 +232,28 @@ describe('PermissionManager tests', function() {
     const uid = util.uid()
     const permitArgs = yield createPermitArgs(uid)
     yield contract.grant(permitArgs)
-    // check
-    const args = { address: permitArgs.address, permissions: permitArgs.permissions }
-    const isPermitted = yield contract.check(args)
-    // event log
-    const { eventLog } = yield contract.getState()
-    assert.equal(eventLog.length, 1, 'one entry')
-    const eventLogEntry = eventLog[0];
-    assert.equal(eventLogEntry.msgSender, admin.address, 'msg sender')
-    assert.isDefined(eventLogEntry.blockTimestamp, 'timestamp')
-    assert.equal(eventLogEntry.adrs, args.address, 'address')
-    assert.equal(eventLogEntry.permissions, args.permissions, 'permissions')
-    assert.equal(eventLogEntry.result, RestStatus.OK, 'result')
+    // check OK - should not be logged
+    {
+      const args = { address: permitArgs.address, permissions: permitArgs.permissions }
+      yield contract.check(args)
+      // event log
+      const { eventLog } = yield contract.getState()
+      assert.equal(eventLog.length, 0, 'not logged')
+    }
+    // check unauthorized
+    {
+      const args = { address: permitArgs.address, permissions: 0x8 }
+      yield contract.check(args)
+      // event log
+      const { eventLog } = yield contract.getState()
+      assert.equal(eventLog.length, 1, 'one entry')
+      const eventLogEntry = eventLog[0];
+      assert.equal(eventLogEntry.msgSender, admin.address, 'msg sender')
+      assert.isDefined(eventLogEntry.blockTimestamp, 'timestamp')
+      assert.equal(eventLogEntry.adrs, args.address, 'address')
+      assert.equal(eventLogEntry.permissions, args.permissions, 'permissions')
+      assert.equal(eventLogEntry.result, RestStatus.UNAUTHORIZED, 'result')
+    }
   })
 })
 

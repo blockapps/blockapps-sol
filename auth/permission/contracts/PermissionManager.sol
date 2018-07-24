@@ -28,6 +28,14 @@ contract PermissionManager is RestStatus {
     uint result;
   }
 
+  // event log type
+  enum EventLogType {
+    NULL,
+    GRANT,
+    REVOKE,
+    CHECK
+  }
+
   // event log
   EventLogEntry[] eventLog;
 
@@ -119,7 +127,7 @@ contract PermissionManager is RestStatus {
     // check
     uint index = addressToIndexMap[_address];
     Permit permit = permits[index];
-    if (permit.permissions & _permissions == 0) {
+    if (permit.permissions & _permissions != _permissions) {
       return (RestStatus.UNAUTHORIZED);
     }
     return (RestStatus.OK);
@@ -136,7 +144,9 @@ contract PermissionManager is RestStatus {
       _permissions,
       result
     );
-    eventLog.push(eventLogEntry);
+    if (result != RestStatus.OK) {
+      eventLog.push(eventLogEntry);
+    }
     return (result);
   }
 
