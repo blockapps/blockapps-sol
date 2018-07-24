@@ -63,7 +63,7 @@ describe('UserManager tests', function() {
     args.username = '123456789012345678901234567890123'; // 33 chars
     yield assert.shouldThrowRest(function*() {
       return yield contract.createUser(args);
-    }, RestStatus.ERROR);
+    }, RestStatus.BAD_REQUEST);
   });
 
   it('Test exists()', function* () {
@@ -107,7 +107,7 @@ describe('UserManager tests', function() {
     const user = yield contract.createUser(args);
     yield assert.shouldThrowRest(function*() {
       const user = yield contract.createUser(args);
-    }, RestStatus.ERROR);
+    }, RestStatus.BAD_REQUEST);
   });
 
   it('Get User', function *() {
