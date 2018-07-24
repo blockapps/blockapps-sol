@@ -51,7 +51,7 @@ contract PermissionManager is RestStatus {
   /**
   * Constructor
   */
-  constructor(address _owner, address _master) {
+  function PermissionManager(address _owner, address _master) {
     owner = _owner;
     master = _master;
     permits.length = 1; // see above note
@@ -107,7 +107,9 @@ contract PermissionManager is RestStatus {
   }
 
   function grant(string _id, address _address, uint _permissions) public returns (uint, uint) {
+    // call grant
     var(restStatus, permitPermissions) = _grant(_id, _address, _permissions);
+    // log the results
     EventLogEntry memory eventLogEntry = EventLogEntry(
     // meta
       msg.sender,
@@ -141,12 +143,14 @@ contract PermissionManager is RestStatus {
   }
 
   function revoke(address _address) public returns (uint) {
+    // call revoke
     uint result = _revoke(_address);
+    // log the result
     EventLogEntry memory eventLogEntry = EventLogEntry(
-      // meta
+    // meta
       msg.sender,
       block.timestamp,
-      // event
+    // event
       uint(EventLogType.REVOKE),
       '',
       _address,
@@ -172,23 +176,23 @@ contract PermissionManager is RestStatus {
   }
 
   function check(address _address, uint _permissions) public constant returns (uint) {
+    // call check
     uint result = _check(_address, _permissions);
-    EventLogEntry memory eventLogEntry = EventLogEntry(
-      // meta
-      msg.sender,
-      block.timestamp,
-      // event
-      uint(EventLogType.CHECK),
-      '',
-      _address,
-      _permissions,
-      result
-    );
+    // log the result
     if (result != RestStatus.OK) {
+      EventLogEntry memory eventLogEntry = EventLogEntry(
+      // meta
+        msg.sender,
+        block.timestamp,
+      // event
+        uint(EventLogType.CHECK),
+        '',
+        _address,
+        _permissions,
+        result
+      );
       eventLog.push(eventLogEntry);
     }
     return (result);
   }
-
-
 }
