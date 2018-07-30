@@ -14,4 +14,5 @@ contract RestStatus {
   uint constant CONFLICT = 409;
   uint constant SERVER_ERROR = 500; // 5xx
   uint constant INTERNAL_SERVER_ERROR = 500;
+  uint constant GATEWAY_TIMEOUT = 504;
 }
