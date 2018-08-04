@@ -3,7 +3,7 @@ import "../../../rest/contracts/RestStatus.sol";
 /**
 * Permission Manager for all
 */
-contract PermissionManager is RestStatus {
+contract HashmapPermissionManager is RestStatus {
   // master account
   address master;
   // owner account
@@ -198,7 +198,12 @@ contract PermissionManager is RestStatus {
 
   // base function - must be overriden
   function canModifyHashmap(address _address) returns (bool) {
-    return false;
+    return true;
+  }
+
+  function canModifyGasDeal(address _address) returns (bool) {
+    uint permissions = 1 << uint(EchoPermission.GAS_MODIFY_DEAL);
+    return check(_address, permissions) == RestStatus.OK;
   }
 
 
