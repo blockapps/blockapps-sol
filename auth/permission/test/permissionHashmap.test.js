@@ -42,12 +42,13 @@ describe('PermissionHashmap tests', function() {
     const contract = yield permissionHashmapJs.uploadContract(admin, hashmapPermissionManager)
     const iuid = util.iuid();
     const args = factory.createEntity(iuid);
-    yield contract.put(args);
-    const state = yield contract.getState();
-    assert.equal(state.values.length, 2, 'length 2');
-    assert.equal(parseInt(state.values[1]), parseInt(args.value), 'value');
-  });
+    const method = 'put'
+    const result = rest.callMethod(master, contract, method, args)
 
+    const state = yield contract.getState();
+    assert.equal(state.values.length, 1, 'length 1 - did not put');
+    assert.equal(parseInt(state.values[0]), 0, 'empty');
+  });
 })
 
 function* getHashmapPermissionManager(admin, master) {
