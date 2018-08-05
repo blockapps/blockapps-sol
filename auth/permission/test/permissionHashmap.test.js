@@ -12,11 +12,13 @@ const adminName = util.uid('Admin')
 const adminPassword = '1234'
 const masterName = util.uid('Master')
 const masterPassword = '5678'
+const attackerName = util.uid('Attacker')
+const attackerPassword = '9090'
 
 describe('PermissionHashmap tests', function() {
   this.timeout(config.timeout)
 
-  let admin, master, hashmapPermissionManager
+  let admin, master, attacker, hashmapPermissionManager
 
   // get ready:  admin-user and manager-contract
   before(function* () {
@@ -24,8 +26,10 @@ describe('PermissionHashmap tests', function() {
     admin = yield rest.createUser(adminName, adminPassword)
     console.log('creating master')
     master = yield rest.createUser(masterName, masterPassword)
+    console.log('creating attacker')
+    attacker = yield rest.createUser(attackerName, attackerPassword)
     // pm
-    hashmapPermissionManager = yield getHashmapPermissionManager(admin, master)
+    hashmapPermissionManager = yield createHashmapPermissionManager(admin, master)
   })
 
   it('put', function*() {
@@ -43,17 +47,46 @@ describe('PermissionHashmap tests', function() {
     const iuid = util.iuid();
     const args = factory.createEntity(iuid);
     const method = 'put'
-    const result = rest.callMethod(master, contract, method, args)
+    const result = yield rest.callMethod(attacker, contract, method, util.usc(args))
 
     const state = yield contract.getState();
     assert.equal(state.values.length, 1, 'length 1 - did not put');
     assert.equal(parseInt(state.values[0]), 0, 'empty');
   });
+
+  it('get', function*() {
+    const contract = yield permissionHashmapJs.uploadContract(admin, hashmapPermissionManager)
+    const iuid = util.iuid();
+    const args = factory.createEntity(iuid);
+    // put
+    yield contract.put(args);
+    // get
+    const value = yield contract.get({key: args.key});
+    assert.equal(parseInt(value), parseInt(args.value), 'value');
+    const notFound = yield contract.get({key: '666'});
+    assert.equal(parseInt(notFound), 0, 'not found');
+  });
+
+  it('get - unauthorized', function*() {
+    const contract = yield permissionHashmapJs.uploadContract(admin, hashmapPermissionManager)
+    const iuid = util.iuid();
+    const putArgs = factory.createEntity(iuid);
+    // put
+    yield contract.put(putArgs);
+    // get
+    const method = 'get'
+    const args = {
+      key: putArgs.key,
+    }
+    const [ value ] = yield rest.callMethod(attacker, contract, method, util.usc(args))
+    assert.equal(parseInt(value), 0, 'value 0 - did not put');
+  });
+
 })
 
-function* getHashmapPermissionManager(admin, master) {
+function* createHashmapPermissionManager(admin, master) {
   const contractName = 'HashmapPermissionManager';
-  const contractFilename = `${config.libPath}/auth/permission/test/HashmapPermissionManager.sol`;
+  const contractFilename = `${config.libPath}/auth/permission/test/fixtures/HashmapPermissionManager.sol`;
   const args = {
     owner: admin.address,
     master: master.address,

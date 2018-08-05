@@ -1,5 +1,5 @@
-import "../../../rest/contracts/RestStatus.sol";
-import "../contracts/PermissionManager.sol";
+import "../../../../rest/contracts/RestStatus.sol";
+import "../../contracts/PermissionManager.sol";
 
 /**
 * Hashmap Permission Manager - test a permissioned hashmap

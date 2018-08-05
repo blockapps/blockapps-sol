@@ -18,4 +18,12 @@ contract PermissionHashmap is RestStatus, UnsafeHashmap {
     // put
     return super.put(_key, _value);
   }
+
+  function get(string _key) public constant returns (address) {
+    // check permissions
+    if (!permissionManager.canModifyHashmap(msg.sender)) return;
+    // get
+    return super.get(_key);
+  }
+
 }
