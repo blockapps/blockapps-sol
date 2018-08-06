@@ -195,4 +195,9 @@ contract PermissionManager is RestStatus {
     }
     return (result);
   }
+  
+  // STUB base function - must be overriden
+  function canModifyHashmap(address _address) returns (bool) {
+    return false;
+  }
 }
