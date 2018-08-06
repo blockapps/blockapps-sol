@@ -43,10 +43,10 @@ contract UserManager is RestStatus, Util {
     }
 
     // name must be <= 32 bytes
-    if (bytes(_username).length > 32) return (RestStatus.ERROR, 0);
-    if (_pwHash.length > 32) return (RestStatus.ERROR, 0);
+    if (bytes(_username).length > 32) return (RestStatus.BAD_REQUEST, 0);
+    if (_pwHash.length > 32) return (RestStatus.BAD_REQUEST, 0);
     // fail if username exists
-    if (exists(_username)) return (RestStatus.ERROR, 0);
+    if (exists(_username)) return (RestStatus.BAD_REQUEST, 0);
     // add user
     User user = new User(_account, _username, _pwHash, _role);
     users.put(_username, user);

@@ -6,17 +6,19 @@ import "../../contracts/PermissionManager.sol";
 */
 contract HashmapPermissionManager is PermissionManager {
 
+  uint constant MODIFY_MAP = 1234;
+
   constructor(
     address _owner,
     address _master
   ) public PermissionManager(_owner, _master) {
     // grant here
-    grant('admin', msg.sender, 1234);
+    grant('admin', msg.sender, MODIFY_MAP);
   }
 
-  // base function - must be overriden
+  // overriding the base function - real check
   function canModifyHashmap(address _address) returns (bool) {
-    uint permissions = 1234;
+    uint permissions = MODIFY_MAP;
     return check(_address, permissions) == RestStatus.OK;
   }
 }

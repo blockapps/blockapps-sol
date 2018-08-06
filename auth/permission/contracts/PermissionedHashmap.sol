@@ -5,7 +5,7 @@ import "../../../auth/permission/contracts/PermissionManager.sol";
 /**
  * Permissioned Hashmap
  */
-contract PermissionHashmap is RestStatus, UnsafeHashmap {
+contract PermissionedHashmap is RestStatus, UnsafeHashmap {
   PermissionManager public permissionManager;
 
   constructor(address _permissionManager) {
@@ -19,11 +19,10 @@ contract PermissionHashmap is RestStatus, UnsafeHashmap {
     return super.put(_key, _value);
   }
 
-  function get(string _key) public constant returns (address) {
+  function remove(string _key) public {
     // check permissions
     if (!permissionManager.canModifyHashmap(msg.sender)) return;
-    // get
-    return super.get(_key);
+    // put
+    return super.remove(_key);
   }
-
 }
