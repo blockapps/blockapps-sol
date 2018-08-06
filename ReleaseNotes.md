@@ -1,3 +1,11 @@
+### Version: 1.2.0
+
+#### Minor upgrades
+* `PermissionedHashmap` added. 
+  * Takes an implementation _PermissionManager_ on construction
+  * `put()` and `remove()` require `canModifyMap()` to be provided by the _PermissionManager_
+  
+------------
 
 ### Version: 1.1.0
 
