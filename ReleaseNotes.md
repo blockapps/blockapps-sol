@@ -6,6 +6,14 @@
   * `put()` and `remove()` require `canModifyMap()` to be provided by the _PermissionManager_
   
 ------------
+### Version: 1.1.1
+
+#### Minor upgrades
+* `RestStatus` added the following codes: 
+   * `504` GATEWAY_TIMEOUT
+   * `502` BAD_GATEWAY
+
+------------
 
 ### Version: 1.1.0
 
