@@ -12,6 +12,19 @@ contract Util {
     return stringToBytes32(source);
   }
 
+  function i2b32(uint source) returns (bytes32) {
+    return stringToBytes32(uintToString(source));
+  }
+
+  function a2b32(uint[] source) returns (bytes32[]) {
+    uint256 len = source.length;
+    bytes32[] memory result = new bytes32[](len);
+    for (uint i = 0; i < source.length; i++) {
+      result[i] = stringToBytes32(uintToString(source[i]));
+    }
+    return result;
+  }
+
   function uintToString(uint v) constant returns (string str) {
     uint maxlength = 100;
     bytes memory reversed = new bytes(maxlength);
