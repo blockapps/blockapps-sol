@@ -1,7 +1,8 @@
 import "./ValidationRuleInterface.sol";
+import "./ValidationStatus.sol";
 import "../../rest/contracts/RestStatus.sol";
 
-contract ValidationEngine is RestStatus {
+contract ValidationEngine is RestStatus, ValidationStatus {
 
   mapping (bytes32 => bytes32[]) ruleNames;
   mapping (bytes32 => mapping(bytes32 => mapping(bool => ValidationRuleInterface))) public ruleSets;
@@ -24,10 +25,10 @@ contract ValidationEngine is RestStatus {
     ruleSets[profileName][ruleName][false] = ValidationRuleInterface(0);
   }
 
-  function validate(address contractAddress, bytes32 profileName) public returns (bool, uint, bytes32) {
+  function validate(address contractAddress, bytes32 profileName) public returns (uint, uint, bool, bytes32) {
     bytes32[] names = ruleNames[profileName];
     if(names.length == 0) {
-      return (false, RestStatus.NOT_FOUND, "Profile Not Found");
+      return (RestStatus.NOT_FOUND, ValidationStatus.PROFILE_INVALID, false, "Profile Not Found");
     }
     for(uint i = 0; i < names.length; i++) {
       address temp = ruleSets[profileName][names[i]][true];
@@ -37,9 +38,9 @@ contract ValidationEngine is RestStatus {
       ValidationRuleInterface rule = ValidationRuleInterface(temp);
       var (isValid, status, message) = rule.apply(contractAddress);
       if (!isValid) {
-        return (false, status, message);
+        return (RestStatus.OK, status, false, message);
       }
     }
-    return (true, RestStatus.OK, "Validations Passed");
+    return (RestStatus.OK, ValidationStatus.VALIDATION_PASSED, true, "Validations Passed");
   }
 }
