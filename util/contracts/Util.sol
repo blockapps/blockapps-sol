@@ -19,7 +19,7 @@ contract Util {
         bytesString[charCount] = char;
       }
       bytes memory bytesStringTrimmed = new bytes(charCount);
-      for (j = 0; j < charCount; j++) {
+      for (uint j = 0; j < charCount; j++) {
           bytesStringTrimmed[j] = bytesString[j];
       }
       return string(bytesStringTrimmed);
