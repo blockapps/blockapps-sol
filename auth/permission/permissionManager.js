@@ -51,6 +51,14 @@ function bind(admin, contract) {
   return contract;
 }
 
+function bindAddress(admin, address) {
+  const contract = {
+    name: contractName,
+    address,
+  }
+  return bind(admin, contract)
+}
+
 // throws: ErrorCodes
 // returns: updated permissions
 function* grant(admin, contract, args) {
@@ -113,8 +121,9 @@ function* transferOwnership(admin, contract, args) {
 }
 
 module.exports = {
-  bind: bind,
-  uploadContract: uploadContract,
-  createPermissionsAdmin: createPermissionsAdmin,
-  contractName: contractName,
+  bind,
+  bindAddress,
+  uploadContract,
+  createPermissionsAdmin,
+  contractName,
 };
