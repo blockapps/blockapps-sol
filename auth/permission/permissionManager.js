@@ -8,6 +8,17 @@ const contractName = 'PermissionManager';
 const contractFilename = `${config.libPath}/auth/permission/contracts/PermissionManager.sol`;
 const RestStatus = rest.getFields(`${config.libPath}/rest/contracts/RestStatus.sol`);
 
+util.bitmaskToEnumString = function (bitmask, bitmaskEnum) {
+  const strings = []
+  for (let i = 0; i < bitmaskEnum.MAX; i++) {
+    const mask = (1 << i)
+    if (bitmask & mask) {
+      strings.push(bitmaskEnum[i])
+    }
+  }
+  return strings
+}
+
 
 function* uploadContract(admin, master) {
   // NOTE: in production, the contract is created and owned by the AdminInterface
@@ -44,6 +55,12 @@ function bind(admin, contract) {
   }
   contract.check = function* (args) {
     return yield check(admin, contract, args);
+  }
+  contract.listPermits = function* (args) {
+    return yield listPermits(admin, contract, args);
+  }
+  contract.listEvents = function* (args) {
+    return yield listEvents(admin, contract, args);
   }
   contract.transferOwnership = function* (args) {
     return yield transferOwnership(admin, contract, args);
@@ -118,6 +135,27 @@ function* transferOwnership(admin, contract, args) {
     throw new rest.RestError(restStatus, method, args);
   }
   return RestStatus.OK;
+}
+
+// list
+function* listPermits(admin, contract, args) {
+  const { permits } = yield contract.getState()
+  const permitsJson = permits.map((permit) => {
+    permit.permissionsHex = Number(permit.permissions).toString(16)
+    permit.strings = util.bitmaskToEnumString(permit.permissions, args.enum)
+    return permit
+  })
+  return permitsJson
+}
+
+function* listEvents(admin, contract, args) {
+  const { eventLog } = yield contract.getState()
+  const eventsJson = eventLog.map((event) => {
+    event.permissionsHex = Number(event.permissions).toString(16)
+    event.strings = util.bitmaskToEnumString(event.permissions, args.enum)
+    return event
+  })
+  return eventsJson
 }
 
 module.exports = {

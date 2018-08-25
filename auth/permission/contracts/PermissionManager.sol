@@ -31,7 +31,7 @@ contract PermissionManager is RestStatus {
   }
 
   // event log type
-  enum EventLogType {
+  enum EventLogType { // TODO expose -LS
     NULL,
     GRANT,
     REVOKE,
