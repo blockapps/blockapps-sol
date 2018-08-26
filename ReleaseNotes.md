@@ -1,3 +1,10 @@
+### Version: 1.2.1
+
+#### Issues Fixed
+* `uintToString` fixed.
+  
+------------
+
 ### Version: 1.2.0
 
 #### Minor upgrades
