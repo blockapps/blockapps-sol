@@ -1,3 +1,13 @@
+### Version: 1.2.1
+
+#### Minor upgrades
+* `listPermits` & `listEvents` added to convert bitmask to human-readable enum values
+  
+#### Issues Fixed
+* `uintToString` fixed.
+  
+------------
+
 ### Version: 1.2.0
 
 #### Minor upgrades

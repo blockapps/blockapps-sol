@@ -41,6 +41,14 @@ function bind(admin, _contract) {
   return contract
 }
 
+function bindAddress(admin, address) {
+  const contract = {
+    name: contractName,
+    address,
+  }
+  return bind(admin, contract)
+}
+
 function* put(admin, contract, args) {
   rest.verbose('put', args)
   const method = 'put'
@@ -77,5 +85,6 @@ function* remove(admin, contract, args) {
 
 module.exports = {
   bind,
+  bindAddress,
   uploadContract,
 }

@@ -31,7 +31,7 @@ contract PermissionManager is RestStatus {
   }
 
   // event log type
-  enum EventLogType {
+  enum EventLogType { // TODO expose -LS
     NULL,
     GRANT,
     REVOKE,
@@ -197,7 +197,7 @@ contract PermissionManager is RestStatus {
   }
   
   // STUB base function - must be overriden
-  function canModifyHashmap(address _address) returns (bool) {
+  function canModifyMap(address _address) returns (bool) {
     return false;
   }
 }
