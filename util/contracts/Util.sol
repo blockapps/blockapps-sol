@@ -59,4 +59,25 @@ contract Util {
     }
     str = string(s);
   }
+
+  function utfStringLength(string str) constant returns (uint characterCount) {
+    uint i=0;
+    bytes memory byteArray = bytes(str);
+
+    while (i<byteArray.length)
+    {
+        if (byteArray[i]>>7==0)
+            i+=1;
+        else if (byteArray[i]>>5==0x6)
+            i+=2;
+        else if (byteArray[i]>>4==0xE)
+            i+=3;
+        else if (byteArray[i]>>3==0x1E)
+            i+=4;
+        else //For safety
+            i+=1;
+
+        characterCount++;
+    }
+  }
 }
