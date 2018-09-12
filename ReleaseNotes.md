@@ -1,3 +1,10 @@
+### Version: 1.2.2
+
+#### Minor upgrades
+* utf string length function added to `Util`
+  
+------------
+
 ### Version: 1.2.1
 
 #### Minor upgrades
