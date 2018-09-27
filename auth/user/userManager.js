@@ -12,34 +12,34 @@ const RestStatus = rest.getFields(`${config.libPath}/rest/contracts/RestStatus.s
 const UserRole = rest.getEnums(`${config.libPath}/auth/user/contracts/UserRole.sol`).UserRole;
 const userJs = require(`${cwd}/${config.libPath}/auth/user/user`);
 
-function* uploadContract(admin) {
+function* uploadContract(admin, doNotResolve, txParams, chainId) {
   // NOTE: in production, the contract is created and owned by the AdminInterface
   // for testing purposes the creator is the admin user
   const args = { _owner: admin.address };
-  const contract = yield rest.uploadContract(admin, contractName, contractFilename, args);
+  const contract = yield rest.uploadContract(admin, contractName, contractFilename, args, doNotResolve, txParams, chainId);
   yield compileSearch(contract);
   contract.src = 'removed';
   return bind(admin, contract);
 }
 
-function bind(admin, contract) {
+function bind(admin, contract, value, doNotResolve, chainId) {
   contract.getState = function* () {
-    return yield rest.getState(contract);
+    return yield rest.getState(contract, chainId);
   }
   contract.createUser = function* (args) {
-    return yield createUser(admin, contract, args);
+    return yield createUser(admin, contract, args, value, doNotResolve, chainId);
   }
   contract.exists = function* (username) {
-    return yield exists(admin, contract, username);
+    return yield exists(admin, contract, username, value, doNotResolve, chainId);
   }
   contract.getUser = function* (username) {
-    return yield getUser(admin, contract, username);
+    return yield getUser(admin, contract, username, value, doNotResolve, chainId);
   }
   contract.getUsers = function* () {
-    return yield getUsers(admin, contract);
+    return yield getUsers(admin, contract, value, doNotResolve, chainId);
   }
   contract.authenticate = function* (args) {
-    return yield authenticate(admin, contract, args);
+    return yield authenticate(admin, contract, args, value, doNotResolve, chainId);
   }
   return contract;
 }
@@ -57,14 +57,14 @@ function* compileSearch(contract) {
 
 // throws: RestStatus
 // returns: user record from search
-function* createUser(admin, contract, args) {
+function* createUser(admin, contract, args, value, doNotResolve, chainId) {
   rest.verbose('createUser', args);
 
   // function createUser(address account, string username, bytes32 pwHash, uint role) returns (ErrorCodes) {
   const method = 'createUser';
 
   // create the user, with the eth account
-  const [restStatus, address] = yield rest.callMethod(admin, contract, method, util.usc(args));
+  const [restStatus, address] = yield rest.callMethod(admin, contract, method, util.usc(args), value, doNotResolve, chainId);
   if (restStatus != RestStatus.CREATED) {
     throw new rest.RestError(restStatus, method, args);
   }
@@ -73,19 +73,19 @@ function* createUser(admin, contract, args) {
   return user;
 }
 
-function* exists(admin, contract, username) {
+function* exists(admin, contract, username, value, doNotResolve, chainId) {
   rest.verbose('exists', username);
   // function exists(string username) returns (bool) {
   const method = 'exists';
   const args = {
     username: username,
   };
-  const result = yield rest.callMethod(admin, contract, method, util.usc(args));
+  const result = yield rest.callMethod(admin, contract, method, util.usc(args), value, doNotResolve, chainId);
   const exist = (result[0] === true);
   return exist;
 }
 
-function* getUser(admin, contract, username) {
+function* getUser(admin, contract, username, value, doNotResolve, chainId) {
   rest.verbose('getUser', username);
   // function getUser(string username) returns (address) {
   const method = 'getUser';
@@ -94,7 +94,7 @@ function* getUser(admin, contract, username) {
   };
 
   // get the use address
-  const [address] = yield rest.callMethod(admin, contract, method, util.usc(args));
+  const [address] = yield rest.callMethod(admin, contract, method, util.usc(args), value, doNotResolve, chainId);
   if (address == 0) {
     throw new rest.RestError(RestStatus.NOT_FOUND, method, args);
   }
@@ -102,20 +102,20 @@ function* getUser(admin, contract, username) {
   return yield userJs.getUserByAddress(address);
 }
 
-function* getUsers(admin, contract) {
+function* getUsers(admin, contract, value, doNotResolve, chainId) {
   rest.verbose('getUsers');
-  const {users: usersHashmap} = yield rest.getState(contract);
-  const {values} = yield rest.getState({name: 'Hashmap', address:usersHashmap});
+  const {users: usersHashmap} = yield rest.getState(contract, chainId);
+  const {values} = yield rest.getState({name: 'Hashmap', address:usersHashmap}, chainId);
   const addresses = values.slice(1);
   return yield userJs.getUsers(addresses);
 }
 
-function* authenticate(admin, contract, args) {
+function* authenticate(admin, contract, args, value, doNotResolve, chainId) {
   rest.verbose('authenticate', args);
 
   // function authenticate(string _username, bytes32 _pwHash) returns (bool) {
   const method = 'authenticate';
-  const [result] = yield rest.callMethod(admin, contract, method, util.usc(args));
+  const [result] = yield rest.callMethod(admin, contract, method, util.usc(args), value, doNotResolve, chainId);
   const isOK = (result == true);
   return isOK;
 }

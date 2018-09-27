@@ -9,16 +9,16 @@ const contractFilename = `${ba.common.cwd}/${config.libPath}/auth/user/contracts
 const RestStatus = rest.getFields(`${config.libPath}/rest/contracts/RestStatus.sol`);
 const UserRole = rest.getEnums(`${config.libPath}/auth/user/contracts/UserRole.sol`).UserRole;
 
-function* uploadContract(admin, args) {
-  const contract = yield rest.uploadContract(admin, contractName, contractFilename, util.usc(args));
+function* uploadContract(admin, args, doNotResolve, txParams, chainId) {
+  const contract = yield rest.uploadContract(admin, contractName, contractFilename, util.usc(args), doNotResolve, txParams, chainId);
   yield compileSearch(contract);
   contract.src = 'removed';
   return bind(admin, contract);
 }
 
-function bind(admin, contract) {
+function bind(admin, contract, chainId) {
   contract.getState = function* () {
-    return yield rest.getState(contract);
+    return yield rest.getState(contract, chainId);
   }
   contract.authenticate = function* (pwHash) {
     return yield authenticate(admin, contract, pwHash);
@@ -50,14 +50,14 @@ function* getUserByAddress(address) {
   return (yield rest.waitQuery(`${contractName}?address=eq.${address}`, 1))[0];
 }
 
-function* authenticate(admin, contract, pwHash) {
+function* authenticate(admin, contract, pwHash, value, doNotResolve, chainId) {
   rest.verbose('authenticate', pwHash);
   // function authenticate(bytes32 _pwHash) return (bool) {
   const method = 'authenticate';
   const args = {
     _pwHash: pwHash,
   };
-  const result = yield rest.callMethod(admin, contract, method, args);
+  const result = yield rest.callMethod(admin, contract, method, args, value, doNotResolve, chainId);
   const isAuthenticated = (result[0] === true);
   return isAuthenticated;
 }

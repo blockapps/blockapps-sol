@@ -53,7 +53,10 @@ describe('UserManager tests', function() {
 
     // create user UNAUTHORIZED
     const method = 'createUser';
-    const [restStatus, address] = yield rest.callMethod(attacker, contract, method, util.usc(args));
+    const chainId = '';
+    const value = undefined;
+    const doNotResolve = undefined;
+    const [restStatus, address] = yield rest.callMethod(attacker, contract, method, util.usc(args), value, doNotResolve, chainId);
     assert.equal(restStatus, RestStatus.UNAUTHORIZED, 'should fail');
   });
 

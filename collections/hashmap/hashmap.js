@@ -6,19 +6,19 @@ const config = ba.common.config;
 const contractName = 'Hashmap';
 const contractFilename = `${config.libPath}/collections/hashmap/contracts/Hashmap.sol`;
 
-function* uploadContract(admin) {
+function* uploadContract(admin, doNotResolve, txParams, chainId) {
   const args = {};
-  const contract = yield rest.uploadContract(admin, contractName, contractFilename, util.usc(args));
+  const contract = yield rest.uploadContract(admin, contractName, contractFilename, util.usc(args), doNotResolve, txParams, chainId);
   contract.src = 'removed';
   return bind(admin, contract);
 }
 
-function bind(admin, contract) {
+function bind(admin, contract, chainId) {
   contract.getState = function* () {
-    return yield rest.getState(contract);
+    return yield rest.getState(contract, chainId);
   }
   contract.getStateVar = function* (args) {
-    return yield rest.getStateVar(contract, args.name, args.count, args.offset, args.length);
+    return yield rest.getStateVar(contract, args.name, args.count, args.offset, args.length, chainId);
   }
   contract.put = function* (args) {
     return yield put(admin, contract, args);
@@ -42,45 +42,57 @@ function bind(admin, contract) {
   return contract;
 }
 
-function* put(admin, contract, args) {
+function* put(admin, contract, args, chainId) {
   rest.verbose('put', args);
   const method = 'put';
-  const result = yield rest.callMethod(admin, contract, method, util.usc(args));
+  const value = undefined;
+  const doNotResolve = undefined;
+  const result = yield rest.callMethod(admin, contract, method, util.usc(args), value, doNotResolve, chainId);
   return result;
 }
 
-function* get(admin, contract, args) {
+function* get(admin, contract, args, chainId) {
   rest.verbose('get', args);
   const method = 'get';
-  const result = yield rest.callMethod(admin, contract, method, util.usc(args));
+  const value = undefined;
+  const doNotResolve = undefined;
+  const result = yield rest.callMethod(admin, contract, method, util.usc(args), value, doNotResolve, chainId);
   return result[0];
 }
 
-function* contains(admin, contract, args) {
+function* contains(admin, contract, args, chainId) {
   rest.verbose('contains', args);
   const method = 'contains';
-  const result = yield rest.callMethod(admin, contract, method, util.usc(args));
+  const value = undefined;
+  const doNotResolve = undefined;
+  const result = yield rest.callMethod(admin, contract, method, util.usc(args), value, doNotResolve, chainId);
   return result[0] == true;
 }
 
-function* size(admin, contract, args) {
+function* size(admin, contract, args, chainId) {
   rest.verbose('size', args);
   const method = 'size';
-  const result = yield rest.callMethod(admin, contract, method, util.usc(args));
+  const value = undefined;
+  const doNotResolve = undefined;
+  const result = yield rest.callMethod(admin, contract, method, util.usc(args), value, doNotResolve, chainId);
   return parseInt(result[0]);
 }
 
-function* transferOwnership(admin, contract, args) {
+function* transferOwnership(admin, contract, args, chainId) {
   rest.verbose('transferOwnership', args);
   const method = 'transferOwnership';
-  const result = yield rest.callMethod(admin, contract, method, util.usc(args));
+  const value = undefined;
+  const doNotResolve = undefined;
+  const result = yield rest.callMethod(admin, contract, method, util.usc(args), value, doNotResolve, chainId);
   return result[0] == true;
 }
 
-function* getOwner(admin, contract, args) {
+function* getOwner(admin, contract, args, chainId) {
   rest.verbose('getOwner', args);
   const method = 'getOwner';
-  const result = yield rest.callMethod(admin, contract, method, util.usc(args));
+  const value = undefined;
+  const doNotResolve = undefined;
+  const result = yield rest.callMethod(admin, contract, method, util.usc(args), value, doNotResolve, chainId);
   return result[0];
 }
 

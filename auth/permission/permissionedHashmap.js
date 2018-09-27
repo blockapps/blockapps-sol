@@ -7,20 +7,20 @@ const { config, util } = ba.common
 const contractName = 'PermissionedHashmap'
 const contractFilename = `${config.libPath}/auth/permission/contracts/PermissionedHashmap.sol`
 
-function* uploadContract(admin, permissionManager) {
+function* uploadContract(admin, permissionManager, doNotResolve, txParams, chainId) {
   const args = { permissionManager: permissionManager.address }
-  const contract = yield rest.uploadContract(admin, contractName, contractFilename, util.usc(args))
+  const contract = yield rest.uploadContract(admin, contractName, contractFilename, util.usc(args), doNotResolve, txParams, chainId)
   contract.src = 'removed'
   return bind(admin, contract)
 }
 
-function bind(admin, _contract) {
+function bind(admin, _contract, chainId) {
   const contract = _contract
   contract.getState = function* () {
-    return yield rest.getState(contract)
+    return yield rest.getState(contract, chainId)
   }
   contract.getStateVar = function* (args) {
-    return yield rest.getStateVar(contract, args.name, args.count, args.offset, args.length)
+    return yield rest.getStateVar(contract, args.name, args.count, args.offset, args.length, chainId)
   }
   contract.put = function* (args) {
     return yield put(admin, contract, args)
@@ -49,38 +49,38 @@ function bindAddress(admin, address) {
   return bind(admin, contract)
 }
 
-function* put(admin, contract, args) {
+function* put(admin, contract, args, value, doNotResolve, chainId) {
   rest.verbose('put', args)
   const method = 'put'
-  const result = yield rest.callMethod(admin, contract, method, util.usc(args))
+  const result = yield rest.callMethod(admin, contract, method, util.usc(args), value, doNotResolve, chainId)
   return result
 }
 
-function* get(admin, contract, args) {
+function* get(admin, contract, args, value, doNotResolve, chainId) {
   rest.verbose('get', args)
   const method = 'get'
-  const result = yield rest.callMethod(admin, contract, method, util.usc(args))
+  const result = yield rest.callMethod(admin, contract, method, util.usc(args), value, doNotResolve, chainId)
   return result[0]
 }
 
-function* contains(admin, contract, args) {
+function* contains(admin, contract, args, value, doNotResolve, chainId) {
   rest.verbose('contains', args)
   const method = 'contains'
-  const result = yield rest.callMethod(admin, contract, method, util.usc(args))
+  const result = yield rest.callMethod(admin, contract, method, util.usc(args), value, doNotResolve, chainId)
   return result[0] == true
 }
 
-function* size(admin, contract, args) {
+function* size(admin, contract, args, value, doNotResolve, chainId) {
   rest.verbose('size', args)
   const method = 'size'
-  const result = yield rest.callMethod(admin, contract, method, util.usc(args))
+  const result = yield rest.callMethod(admin, contract, method, util.usc(args), value, doNotResolve, chainId)
   return parseInt(result[0], 10)
 }
 
-function* remove(admin, contract, args) {
+function* remove(admin, contract, args, value, doNotResolve, chainId) {
   rest.verbose('remove', args)
   const method = 'remove'
-  yield rest.callMethod(admin, contract, method, util.usc(args))
+  yield rest.callMethod(admin, contract, method, util.usc(args), value, doNotResolve, chainId)
 }
 
 module.exports = {

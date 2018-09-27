@@ -175,8 +175,11 @@ describe('PermissionManager tests', function() {
     // transfer ownership to a new admin, by the master
     {
       const args = { newOwner: newOwner.address }
-      const method = 'transferOwnership'
-      const [restStatus] = yield rest.callMethod(master, contract, method, util.usc(args))
+      const method = 'transferOwnership';
+      const chainId = '';
+      const value = undefined;
+      const doNotResolve = undefined;
+      const [restStatus] = yield rest.callMethod(master, contract, method, util.usc(args), value, doNotResolve, chainId)
       assert.equal(restStatus, RestStatus.OK, 'should succeed')
     }
   })
@@ -190,27 +193,39 @@ describe('PermissionManager tests', function() {
     yield contract.grant(args)
     // new admin unauthorized
     {
-      const method = 'grant'
-      const [restStatus, permissions] = yield rest.callMethod(newOwner, contract, method, util.usc(args))
+      const method = 'grant';
+      const chainId = '';
+      const value = undefined;
+      const doNotResolve = undefined;
+      const [restStatus, permissions] = yield rest.callMethod(newOwner, contract, method, util.usc(args), value, doNotResolve, chainId)
       assert.equal(restStatus, RestStatus.UNAUTHORIZED, 'should fail')
     }
     // transfer ownership - must be master
     {
       const args = { newOwner: newOwner.address }
-      const method = 'transferOwnership'
-      const [restStatus] = yield rest.callMethod(master, contract, method, util.usc(args))
+      const method = 'transferOwnership';
+      const chainId = '';
+      const value = undefined;
+      const doNotResolve = undefined;
+      const [restStatus] = yield rest.callMethod(master, contract, method, util.usc(args), value, doNotResolve, chainId)
       assert.equal(restStatus, RestStatus.OK, 'should succeed')
     }
     // old admin unauthorized
     {
-      const method = 'grant'
-      const [restStatus, permissions] = yield rest.callMethod(admin, contract, method, util.usc(args))
+      const method = 'grant';
+      const chainId = '';
+      const value = undefined;
+      const doNotResolve = undefined;
+      const [restStatus, permissions] = yield rest.callMethod(admin, contract, method, util.usc(args), value, doNotResolve, chainId)
       assert.equal(restStatus, RestStatus.UNAUTHORIZED, 'should fail')
     }
     // new admin works
     {
-      const method = 'grant'
-      const [restStatus, permissions] = yield rest.callMethod(newOwner, contract, method, util.usc(args))
+      const method = 'grant';
+      const chainId = '';
+      const value = undefined;
+      const doNotResolve = undefined;
+      const [restStatus, permissions] = yield rest.callMethod(newOwner, contract, method, util.usc(args), value, doNotResolve, chainId)
       assert.equal(restStatus, RestStatus.OK, 'should succeed')
     }
   })
@@ -222,8 +237,11 @@ describe('PermissionManager tests', function() {
     {
       const attacker = yield rest.createUser('Attacker_' + uid, '' + uid)
       const args = { newOwner: attacker.address }
-      const method = 'transferOwnership'
-      const [restStatus, permissions] = yield rest.callMethod(attacker, contract, method, util.usc(args))
+      const method = 'transferOwnership';
+      const chainId = '';
+      const value = undefined;
+      const doNotResolve = undefined;
+      const [restStatus, permissions] = yield rest.callMethod(attacker, contract, method, util.usc(args), value, doNotResolve, chainId)
       assert.equal(restStatus, RestStatus.UNAUTHORIZED, 'should fail')
     }
   })
