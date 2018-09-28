@@ -20,13 +20,15 @@ util.bitmaskToEnumString = function (bitmask, bitmaskEnum) {
 }
 
 
-function* uploadContract(admin, master, doNotResolve, txParams, chainId) {
+function* uploadContract(admin, master, chainId) {
   // NOTE: in production, the contract is created and owned by the AdminInterface
   // for testing purposes the creator is the admin user
   const args = {
     owner: admin.address,
     master: master.address,
   }
+  const doNotResolve = undefined;
+  const txParams = undefined;
   const contract = yield rest.uploadContract(admin, contractName, contractFilename, util.usc(args), doNotResolve, txParams, chainId);
   contract.src = 'removed';
   return bind(admin, contract);
@@ -78,10 +80,12 @@ function bindAddress(admin, address) {
 
 // throws: ErrorCodes
 // returns: updated permissions
-function* grant(admin, contract, args, value, doNotResolve, chainId) {
+function* grant(admin, contract, args, chainId) {
   rest.verbose('grant', args);
   // function grant(address _address, uint _permissions) returns (ErrorCodes) {
   const method = 'grant';
+  const value = undefined;
+  const doNotResolve = undefined;
   const [restStatus, permissions] = yield rest.callMethod(admin, contract, method, util.usc(args), value, doNotResolve, chainId);
   if (restStatus != RestStatus.OK) {
     throw new Error(restStatus);
@@ -91,10 +95,12 @@ function* grant(admin, contract, args, value, doNotResolve, chainId) {
 
 // throws: ErrorCodes
 // returns: permissions
-function* getPermissions(admin, contract, args, value, doNotResolve, chainId) {
+function* getPermissions(admin, contract, args, chainId) {
   rest.verbose('getPermissions', args);
   // function getPermissions(address _address) returns (ErrorCodes, uint) {
   const method = 'getPermissions';
+  const value = undefined;
+  const doNotResolve = undefined;
   const [restStatus, permissions] = yield rest.callMethod(admin, contract, method, util.usc(args), value, doNotResolve, chainId);
   if (restStatus != RestStatus.OK) {
     throw new rest.RestError(restStatus, method, args);
@@ -104,10 +110,12 @@ function* getPermissions(admin, contract, args, value, doNotResolve, chainId) {
 
 // throws: ErrorCodes
 // returns: true if permitted
-function* check(admin, contract, args, value, doNotResolve, chainId) {
+function* check(admin, contract, args, chainId) {
   rest.verbose('check', args);
   // function check(address _address, uint _permissions) returns (ErrorCodes) {
   const method = 'check';
+  const value = undefined;
+  const doNotResolve = undefined;
   const [restStatus] = yield rest.callMethod(admin, contract, method, util.usc(args), value, doNotResolve, chainId);
   if (restStatus != RestStatus.OK) {
     return false;
@@ -116,10 +124,12 @@ function* check(admin, contract, args, value, doNotResolve, chainId) {
 }
 
 // throws: ErrorCodes
-function* revoke(admin, contract, args, value, doNotResolve, chainId) {
+function* revoke(admin, contract, args, chainId) {
   rest.verbose('revoke', args);
   // function revoke(address _address) returns (ErrorCodes) {
   const method = 'revoke';
+  const value = undefined;
+  const doNotResolve = undefined;
   const [restStatus] = yield rest.callMethod(admin, contract, method, util.usc(args), value, doNotResolve, chainId);
   if (restStatus != RestStatus.OK) {
     throw new rest.RestError(restStatus, method, args);
@@ -128,8 +138,10 @@ function* revoke(admin, contract, args, value, doNotResolve, chainId) {
 }
 
 // transferOwnership
-function* transferOwnership(admin, contract, args, value, doNotResolve, chainId) {
+function* transferOwnership(admin, contract, args, chainId) {
   const method = "transferOwnership";
+  const value = undefined;
+  const doNotResolve = undefined;
   const [restStatus] = yield rest.callMethod(admin, contract, method, util.usc(args), value, doNotResolve, chainId);
   if (restStatus != RestStatus.OK) {
     throw new rest.RestError(restStatus, method, args);

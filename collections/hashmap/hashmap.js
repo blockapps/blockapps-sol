@@ -6,8 +6,10 @@ const config = ba.common.config;
 const contractName = 'Hashmap';
 const contractFilename = `${config.libPath}/collections/hashmap/contracts/Hashmap.sol`;
 
-function* uploadContract(admin, doNotResolve, txParams, chainId) {
+function* uploadContract(admin, chainId) {
   const args = {};
+  const doNotResolve = undefined;
+  const txParams = undefined;
   const contract = yield rest.uploadContract(admin, contractName, contractFilename, util.usc(args), doNotResolve, txParams, chainId);
   contract.src = 'removed';
   return bind(admin, contract);
