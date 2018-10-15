@@ -68,7 +68,7 @@ contract Hashmap is UnsafeHashmap {
    *
    * @param      _newOwner   The address to transfer ownership to.
    *
-   * @returns    returns status of ownership transfer
+   * @return     returns status of ownership transfer
    */
   function transferOwnership(address _newOwner) public returns (bool) {
     if (msg.sender != owner) {
