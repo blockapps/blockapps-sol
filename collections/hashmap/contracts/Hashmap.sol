@@ -21,7 +21,7 @@ contract Hashmap is UnsafeHashmap {
   }
 
   /**
-   * @brief      If owner or manager contract is calling function, it will get the value at a key
+   * @dev        If owner or manager contract is calling function, it will get the value at a key
    *
    * @param      _key    The key
    *
@@ -36,7 +36,7 @@ contract Hashmap is UnsafeHashmap {
   }
 
   /**
-   * @brief      If owner or manager contract is calling function, it will check existence of a key/value
+   * @dev        If owner or manager contract is calling function, it will check existence of a key/value
    *
    * @param      _key    The key
    *
@@ -51,7 +51,7 @@ contract Hashmap is UnsafeHashmap {
   }
 
   /**
-   * @brief      If owner or manager contract is calling function, it will return the size of hashmap
+   * @dev        If owner or manager contract is calling function, it will return the size of hashmap
    *
    * @return     returns size of hashmap
    */
@@ -64,11 +64,11 @@ contract Hashmap is UnsafeHashmap {
   }
 
   /**
-   * @dev Allows the current owner to transfer control of the contract to a newOwner.
+   * @dev        Allows the current owner to transfer control of the contract to a newOwner.
    *
-   * @param newOwner The address to transfer ownership to.
+   * @param      _newOwner   The address to transfer ownership to.
    *
-   * @returns    returns status of ownership transfer
+   * @return     returns status of ownership transfer
    */
   function transferOwnership(address _newOwner) public returns (bool) {
     if (msg.sender != owner) {
