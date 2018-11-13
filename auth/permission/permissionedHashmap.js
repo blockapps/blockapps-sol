@@ -1,8 +1,8 @@
 require('co-mocha')
 const ba = require('blockapps-rest')
 
-const { rest } = ba
 const { config, util } = ba.common
+const rest = ba['rest' + config.restVersion ? config.restVersion : ''];
 
 const contractName = 'PermissionedHashmap'
 const contractFilename = `${config.libPath}/auth/permission/contracts/PermissionedHashmap.sol`

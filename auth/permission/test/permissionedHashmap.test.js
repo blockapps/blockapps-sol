@@ -1,8 +1,8 @@
 require('co-mocha')
 const ba = require('blockapps-rest')
 
-const { rest } = ba
 const { config, util, assert, cwd } = ba.common
+const rest = ba['rest' + config.restVersion ? config.restVersion : ''];
 
 const permissionedHashmapJs = require('../permissionedHashmap')
 
