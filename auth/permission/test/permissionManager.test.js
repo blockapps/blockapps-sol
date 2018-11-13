@@ -2,7 +2,7 @@ require('co-mocha')
 const ba = require('blockapps-rest')
 
 const { config, util, assert, cwd } = ba.common
-const rest = ba['rest' + config.restVersion ? config.restVersion : ''];
+const rest = ba[`rest${config.restVersion ? config.restVersion : ''}`];
 
 const permissionManagerJs = require('../permissionManager')
 const RestStatus = rest.getFields(`${cwd}/rest/contracts/RestStatus.sol`)

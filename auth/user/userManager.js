@@ -2,7 +2,7 @@ const ba = require('blockapps-rest');
 const util = ba.common.util;
 const BigNumber = ba.common.BigNumber;
 const config = ba.common.config;
-const rest = ba['rest' + config.restVersion ? config.restVersion : ''];
+const rest = ba[`rest${config.restVersion ? config.restVersion : ''}`];
 const cwd = ba.common.cwd;
 
 const contractName = 'UserManager';

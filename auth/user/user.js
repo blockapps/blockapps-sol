@@ -1,7 +1,7 @@
 const ba = require('blockapps-rest');
 const util = ba.common.util;
 const config = ba.common.config;
-const rest = ba['rest' + config.restVersion ? config.restVersion : ''];
+const rest = ba[`rest${config.restVersion ? config.restVersion : ''}`];
 
 const contractName = 'User';
 const contractFilename = `${ba.common.cwd}/${config.libPath}/auth/user/contracts/User.sol`;
