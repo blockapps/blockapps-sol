@@ -1,8 +1,8 @@
 require('co-mocha');
 const ba = require('blockapps-rest');
-const rest = ba.rest;
 const common = ba.common;
 const config = common.config;
+const rest = ba[`rest${config.restVersion ? config.restVersion : ''}`];
 const util = common.util;
 const should = common.should;
 const assert = common.assert;

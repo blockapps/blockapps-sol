@@ -1,8 +1,8 @@
 const ba = require('blockapps-rest');
-const rest = ba.rest;
 const util = ba.common.util;
 const BigNumber = ba.common.BigNumber;
 const config = ba.common.config;
+const rest = ba[`rest${config.restVersion ? config.restVersion : ''}`];
 
 const contractName = 'PermissionManager';
 const contractFilename = `${config.libPath}/auth/permission/contracts/PermissionManager.sol`;

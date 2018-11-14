@@ -1,7 +1,7 @@
 const ba = require('blockapps-rest')
 
-const { rest } = ba
 const { config, util } = ba.common
+const rest = ba[`rest${config.restVersion ? config.restVersion : ''}`];
 
 const contractName = 'UnsafeHashmap'
 const contractFilename = `${config.libPath}/collections/hashmap/contracts/UnsafeHashmap.sol`
