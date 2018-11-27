@@ -1,7 +1,6 @@
 import "./User.sol";
 import "../../../rest/contracts/RestStatus.sol";
 import "../../../collections/hashmap/contracts/Hashmap.sol";
-import "../../../util/contracts/Util.sol";
 
 /**
 * Interface for Gas Deal data contracts

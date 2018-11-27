@@ -1,4 +1,3 @@
-import "../../../../rest/contracts/RestStatus.sol";
 import "../../contracts/PermissionManager.sol";
 
 /**
