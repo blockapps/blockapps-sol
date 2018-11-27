@@ -8,11 +8,11 @@ contract Util {
       }
   }
 
-  function bytes32ToString(bytes32 x) public pure returns (string) {
+  function bytes32ToString(bytes32 x) public pure returns (string memory) {
       bytes memory bytesString = new bytes(32);
       uint charCount = 0;
       for (charCount = 0; charCount < 32; charCount++) {
-        byte char = byte((uint(x) >> (32 - charCount - 1) * 8) & 0xFF);
+        byte char = x[31 - charCount];
         if (char == 0) {
           break;
         }
@@ -33,7 +33,7 @@ contract Util {
     return stringToBytes32(uintToString(source));
   }
 
-  function a2b32(uint[] source) public pure returns (bytes32[]) {
+  function a2b32(uint[] memory source) public pure returns (bytes32[] memory) {
     uint256 len = source.length;
     bytes32[] memory result = new bytes32[](len);
     for (uint i = 0; i < source.length; i++) {
@@ -42,7 +42,7 @@ contract Util {
     return result;
   }
 
-  function uintToString(uint v) public pure returns (string str) {
+  function uintToString(uint v) public pure returns (string memory str) {
     if (v ==0) return "0";
 
     uint maxlength = 100;
@@ -51,7 +51,7 @@ contract Util {
     while (v != 0) {
       uint remainder = v % 10;
       v = v / 10;
-      reversed[i++] = byte(48 + remainder);
+      reversed[i++] = byte(uint8(48 + remainder));
     }
     bytes memory s = new bytes(i);
     for (uint j = 0; j < i; j++) {
@@ -60,7 +60,7 @@ contract Util {
     str = string(s);
   }
 
-  function utfStringLength(string str) public pure returns (uint characterCount) {
+  function utfStringLength(string memory str) public pure returns (uint characterCount) {
     uint i=0;
     bytes memory byteArray = bytes(str);
 
@@ -68,11 +68,11 @@ contract Util {
     {
         if (byteArray[i]>>7==0)
             i+=1;
-        else if (byteArray[i]>>5==0x6)
+        else if (byteArray[i]>>5=="\x06")
             i+=2;
-        else if (byteArray[i]>>4==0xE)
+        else if (byteArray[i]>>4=="\x0E")
             i+=3;
-        else if (byteArray[i]>>3==0x1E)
+        else if (byteArray[i]>>3=="\x1E")
             i+=4;
         else //For safety
             i+=1;

@@ -82,7 +82,7 @@ contract PermissionManager is RestStatus {
   }
 
 
-  function _grant(string _id, address _address, uint _permissions) private returns (uint, uint) {
+  function _grant(string memory _id, address _address, uint _permissions) private returns (uint, uint) {
     // authorize owner
     if (msg.sender != owner) {
       return (RestStatus.UNAUTHORIZED, 0);
@@ -106,7 +106,7 @@ contract PermissionManager is RestStatus {
     return (RestStatus.OK, permit.permissions);
   }
 
-  function grant(string _id, address _address, uint _permissions) public returns (uint, uint) {
+  function grant(string memory _id, address _address, uint _permissions) public returns (uint, uint) {
     uint restStatus;
     uint permitPermissions;
     // call grant

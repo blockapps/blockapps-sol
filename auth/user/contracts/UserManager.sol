@@ -23,36 +23,37 @@ contract UserManager is RestStatus, Util {
     users = new Hashmap();
   }
 
-  function exists(string _username) public view returns (bool) {
+  function exists(string memory _username) public view returns (bool) {
     return users.contains(_username);
   }
 
-  function getUser(string _username) public view returns (address) {
+  function getUser(string memory _username) public view returns (address) {
     return users.get(_username);
   }
 
   function createUser(
     address _account,
-    string _username,
+    string memory _username,
     bytes32 _pwHash,
     uint _role) public returns (uint, address) {
+    address ZERO = address(0);
     // only owner can execute
     if (msg.sender != owner) {
-      return (RestStatus.UNAUTHORIZED, 0);
+      return (RestStatus.UNAUTHORIZED, ZERO);
     }
 
     // name must be <= 32 bytes
-    if (bytes(_username).length > 32) return (RestStatus.BAD_REQUEST, 0);
-    if (_pwHash.length > 32) return (RestStatus.BAD_REQUEST, 0);
+    if (bytes(_username).length > 32) return (RestStatus.BAD_REQUEST, ZERO);
+    if (_pwHash.length > 32) return (RestStatus.BAD_REQUEST, ZERO);
     // fail if username exists
-    if (exists(_username)) return (RestStatus.BAD_REQUEST, 0);
+    if (exists(_username)) return (RestStatus.BAD_REQUEST, ZERO);
     // add user
-    User user = new User(_account, _username, _pwHash, _role);
+    address user = address(new User(_account, _username, _pwHash, _role));
     users.put(_username, user);
     return (RestStatus.CREATED, user);
   }
 
-  function authenticate(string _username, bytes32 _pwHash) public view returns (bool) {
+  function authenticate(string memory _username, bytes32 _pwHash) public view returns (bool) {
     // fail if username doesnt exists
     if (!exists(_username)) return (false);
     // get the user

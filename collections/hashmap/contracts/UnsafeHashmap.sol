@@ -18,7 +18,7 @@ contract UnsafeHashmap is Util {
     isIterable = false; // not saving keys, to conserve space
   }
 
-  function put(string _key, address _value) public {
+  function put(string memory _key, address _value) public {
     // save the value
     keyMap[b32(_key)] = values.length;
     values.push(_value);
@@ -28,27 +28,27 @@ contract UnsafeHashmap is Util {
     }
   }
 
-  function get(string _key) public view returns (address) {
+  function get(string memory _key) public view returns (address) {
     uint index = keyMap[b32(_key)];
     return values[index];
   }
 
-  function contains(string _key) public view returns (bool) {
+  function contains(string memory _key) public view returns (bool) {
     uint index = keyMap[b32(_key)];
-    return values[index] != 0;
+    return values[index] != address(0);
   }
 
   function size() public view returns (uint) {
     return values.length -1; // not counting entry 0
   }
 
-  function remove(string _key) public {
+  function remove(string memory _key) public {
     uint index = keyMap[b32(_key)];
     if (index == 0) return;
     // remove the index mapping
     keyMap[b32(_key)] = 0;
     // remove the value
-    values[index] = 0;
+    values[index] = address(0);
     // remove the key
     if (isIterable) {
       delete keys[index];

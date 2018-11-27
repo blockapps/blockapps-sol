@@ -31,8 +31,8 @@ contract ValidationEngine is RestStatus, ValidationStatus {
       return (RestStatus.NOT_FOUND, ValidationStatus.PROFILE_INVALID, false, "Profile Not Found");
     }
     for(uint i = 0; i < names.length; i++) {
-      address temp = ruleSets[profileName][names[i]][true];
-      if (temp == 0x0) {
+      address temp = address(ruleSets[profileName][names[i]][true]);
+      if (temp == address(0x0)) {
         continue;
       }
       ValidationRuleInterface rule = ValidationRuleInterface(temp);

@@ -10,7 +10,7 @@ contract User {
   // internal
   uint public updateCounter = 0;
 
-  constructor(address _account, string _username, bytes32 _pwHash, uint _role) public {
+  constructor(address _account, string memory _username, bytes32 _pwHash, uint _role) public {
     account = _account;
     username = _username;
     pwHash = _pwHash;

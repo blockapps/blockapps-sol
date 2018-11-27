@@ -12,7 +12,7 @@ contract Hashmap is UnsafeHashmap {
     owner = msg.sender;
   }
 
-  function put(string _key, address _value) public {
+  function put(string memory _key, address _value) public {
     if (msg.sender != owner) {
       return;
     }
@@ -27,7 +27,7 @@ contract Hashmap is UnsafeHashmap {
    *
    * @return     returns the address of the contract value
    */
-  function get(string _key) public view returns (address) {
+  function get(string memory _key) public view returns (address) {
     if (msg.sender != owner) {
       return address(0);
     }
@@ -42,7 +42,7 @@ contract Hashmap is UnsafeHashmap {
    *
    * @return     returns a boolean of containment
    */
-  function contains(string _key) public view returns (bool) {
+  function contains(string memory _key) public view returns (bool) {
     if (msg.sender != owner) {
       return false;
     }

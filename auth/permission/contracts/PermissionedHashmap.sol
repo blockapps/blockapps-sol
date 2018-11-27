@@ -11,14 +11,14 @@ contract PermissionedHashmap is RestStatus, UnsafeHashmap {
     permissionManager = PermissionManager(_permissionManager);
   }
 
-  function put(string _key, address _value) public {
+  function put(string memory _key, address _value) public {
     // check permissions
     if (!permissionManager.canModifyMap(msg.sender)) return;
     // put
     return super.put(_key, _value);
   }
 
-  function remove(string _key) public {
+  function remove(string memory _key) public {
     // check permissions
     if (!permissionManager.canModifyMap(msg.sender)) return;
     // put
