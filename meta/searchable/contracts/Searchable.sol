@@ -2,11 +2,11 @@ contract Searchable {
   bool constant isSearchable = true;
   uint searchCounter;
 
-  function Searchable() {
+  constructor() public {
     searchCounter = 1;
   }
 
-  function searchable() returns (uint) {
+  function searchable() public returns (uint) {
     return ++searchCounter;
   }
 }

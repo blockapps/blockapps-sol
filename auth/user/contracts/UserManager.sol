@@ -18,16 +18,16 @@ contract UserManager is RestStatus, Util {
   /**
   * Constructor
   */
-  function UserManager(address _owner) {
+  constructor(address _owner) public {
     owner = _owner;
     users = new Hashmap();
   }
 
-  function exists(string _username) returns (bool) {
+  function exists(string _username) public view returns (bool) {
     return users.contains(_username);
   }
 
-  function getUser(string _username) returns (address) {
+  function getUser(string _username) public view returns (address) {
     return users.get(_username);
   }
 
@@ -35,7 +35,7 @@ contract UserManager is RestStatus, Util {
     address _account,
     string _username,
     bytes32 _pwHash,
-    uint _role) returns (uint, address) {
+    uint _role) public returns (uint, address) {
     // only owner can execute
     if (msg.sender != owner) {
       return (RestStatus.UNAUTHORIZED, 0);
@@ -52,7 +52,7 @@ contract UserManager is RestStatus, Util {
     return (RestStatus.CREATED, user);
   }
 
-  function authenticate(string _username, bytes32 _pwHash) returns (bool) {
+  function authenticate(string _username, bytes32 _pwHash) public view returns (bool) {
     // fail if username doesnt exists
     if (!exists(_username)) return (false);
     // get the user

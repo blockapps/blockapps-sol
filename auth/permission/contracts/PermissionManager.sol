@@ -51,7 +51,7 @@ contract PermissionManager is RestStatus {
   /**
   * Constructor
   */
-  function PermissionManager(address _owner, address _master) {
+  constructor(address _owner, address _master) public {
     owner = _owner;
     master = _master;
     permits.length = 1; // see above note
@@ -67,11 +67,11 @@ contract PermissionManager is RestStatus {
     return (RestStatus.OK);
   }
 
-  function exists(address _address) public returns (bool) {
+  function exists(address _address) public view returns (bool) {
     return addressToIndexMap[_address] != 0;
   }
 
-  function getPermissions(address _address) public constant returns (uint, uint) {
+  function getPermissions(address _address) public view returns (uint, uint) {
     // error if address doesnt exists
     if (!exists(_address)) {
       return (RestStatus.NOT_FOUND, 0);
@@ -107,8 +107,10 @@ contract PermissionManager is RestStatus {
   }
 
   function grant(string _id, address _address, uint _permissions) public returns (uint, uint) {
+    uint restStatus;
+    uint permitPermissions;
     // call grant
-    var(restStatus, permitPermissions) = _grant(_id, _address, _permissions);
+    (restStatus, permitPermissions) = _grant(_id, _address, _permissions);
     // log the results
     EventLogEntry memory eventLogEntry = EventLogEntry(
     // meta
@@ -136,7 +138,7 @@ contract PermissionManager is RestStatus {
     }
     // revoke
     uint index = addressToIndexMap[_address];
-    Permit permit = permits[index];
+    Permit storage permit = permits[index];
     permit.permissions = 0;
     permits[index] = permit;
     return (RestStatus.OK);
@@ -161,21 +163,21 @@ contract PermissionManager is RestStatus {
     return (result);
   }
 
-  function _check(address _address, uint _permissions) private constant returns (uint) {
+  function _check(address _address, uint _permissions) private view returns (uint) {
     // error if address doesnt exists
     if (!exists(_address)) {
       return (RestStatus.NOT_FOUND);
     }
     // check
     uint index = addressToIndexMap[_address];
-    Permit permit = permits[index];
+    Permit storage permit = permits[index];
     if (permit.permissions & _permissions != _permissions) {
       return (RestStatus.UNAUTHORIZED);
     }
     return (RestStatus.OK);
   }
 
-  function check(address _address, uint _permissions) public constant returns (uint) {
+  function check(address _address, uint _permissions) public returns (uint) {
     // call check
     uint result = _check(_address, _permissions);
     // log the result
@@ -195,9 +197,9 @@ contract PermissionManager is RestStatus {
     }
     return (result);
   }
-  
+
   // STUB base function - must be overriden
-  function canModifyMap(address _address) returns (bool) {
+  function canModifyMap(address) public returns (bool) {
     return false;
   }
 }

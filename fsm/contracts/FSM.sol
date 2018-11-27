@@ -12,22 +12,18 @@ contract FSM {
 
     mapping (uint => uint) stateMachine;
 
-    function FSM(){
-    }
-
-
-    function handleEvent(uint _state, uint _event) returns (uint){
+    function handleEvent(uint _state, uint _event) public view returns (uint){
         return stateMachine[calculateKey(_state,_event)];
     }
 
 
-    function addTransition(uint _state, uint _event, uint _newState) {
+    function addTransition(uint _state, uint _event, uint _newState) public {
         stateMachine[calculateKey(_state, _event)] = _newState;
         transitions.push(Transition(_state, _event, _newState));
     }
 
 
-    function calculateKey(uint _state, uint _event) returns (uint){
+    function calculateKey(uint _state, uint _event) public pure returns (uint){
         return (_state * 1000) + _event;
     }
 }

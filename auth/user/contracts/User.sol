@@ -1,4 +1,3 @@
-
 /**
  * User data contract
  */
@@ -11,7 +10,7 @@ contract User {
   // internal
   uint public updateCounter = 0;
 
-  function User(address _account, string _username, bytes32 _pwHash, uint _role) {
+  constructor(address _account, string _username, bytes32 _pwHash, uint _role) public {
     account = _account;
     username = _username;
     pwHash = _pwHash;
@@ -19,7 +18,7 @@ contract User {
     updateCounter = 1; // set update counter
   }
 
-  function authenticate(bytes32 _pwHash) returns (bool) {
+  function authenticate(bytes32 _pwHash) public view returns (bool) {
     return pwHash == _pwHash;
   }
 }

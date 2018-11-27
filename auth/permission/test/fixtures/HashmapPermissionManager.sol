@@ -16,7 +16,7 @@ contract HashmapPermissionManager is PermissionManager {
   }
 
   // overriding the base function - real check
-  function canModifyMap(address _address) returns (bool) {
+  function canModifyMap(address _address) public returns (bool) {
     uint permissions = MODIFY_MAP;
     return check(_address, permissions) == RestStatus.OK;
   }

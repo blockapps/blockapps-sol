@@ -7,7 +7,7 @@ import "../../../auth/permission/contracts/PermissionManager.sol";
 contract PermissionedHashmap is RestStatus, UnsafeHashmap {
   PermissionManager public permissionManager;
 
-  constructor(address _permissionManager) {
+  constructor(address _permissionManager) public {
     permissionManager = PermissionManager(_permissionManager);
   }
 

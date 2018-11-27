@@ -12,7 +12,7 @@ contract UnsafeHashmap is Util {
   */
   mapping (bytes32 => uint) keyMap;
 
-  function UnsafeHashmap() {
+  constructor() public {
     values.length = 1; // see above note
     keys.length = 1; // see above note
     isIterable = false; // not saving keys, to conserve space
@@ -28,17 +28,17 @@ contract UnsafeHashmap is Util {
     }
   }
 
-  function get(string _key) public constant returns (address) {
+  function get(string _key) public view returns (address) {
     uint index = keyMap[b32(_key)];
     return values[index];
   }
 
-  function contains(string _key) public constant returns (bool) {
+  function contains(string _key) public view returns (bool) {
     uint index = keyMap[b32(_key)];
     return values[index] != 0;
   }
 
-  function size() public constant returns (uint) {
+  function size() public view returns (uint) {
     return values.length -1; // not counting entry 0
   }
 

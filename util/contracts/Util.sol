@@ -2,13 +2,13 @@
  * Util contract
  */
 contract Util {
-  function stringToBytes32(string memory source) returns (bytes32 result) {
+  function stringToBytes32(string memory source) public pure returns (bytes32 result) {
       assembly {
           result := mload(add(source, 32))
       }
   }
 
-  function bytes32ToString(bytes32 x) constant returns (string) {
+  function bytes32ToString(bytes32 x) public pure returns (string) {
       bytes memory bytesString = new bytes(32);
       uint charCount = 0;
       for (charCount = 0; charCount < 32; charCount++) {
@@ -25,15 +25,15 @@ contract Util {
       return string(bytesStringTrimmed);
   }
 
-  function b32(string memory source) returns (bytes32) {
+  function b32(string memory source) public pure returns (bytes32) {
     return stringToBytes32(source);
   }
 
-  function i2b32(uint source) returns (bytes32) {
+  function i2b32(uint source) public pure returns (bytes32) {
     return stringToBytes32(uintToString(source));
   }
 
-  function a2b32(uint[] source) returns (bytes32[]) {
+  function a2b32(uint[] source) public pure returns (bytes32[]) {
     uint256 len = source.length;
     bytes32[] memory result = new bytes32[](len);
     for (uint i = 0; i < source.length; i++) {
@@ -42,7 +42,7 @@ contract Util {
     return result;
   }
 
-  function uintToString(uint v) constant returns (string str) {
+  function uintToString(uint v) public pure returns (string str) {
     if (v ==0) return "0";
 
     uint maxlength = 100;
@@ -60,7 +60,7 @@ contract Util {
     str = string(s);
   }
 
-  function utfStringLength(string str) constant returns (uint characterCount) {
+  function utfStringLength(string str) public pure returns (uint characterCount) {
     uint i=0;
     bytes memory byteArray = bytes(str);
 

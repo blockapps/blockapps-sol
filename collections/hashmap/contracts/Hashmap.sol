@@ -8,7 +8,7 @@ import "./UnsafeHashmap.sol";
 contract Hashmap is UnsafeHashmap {
   address public owner;
 
-  function Hashmap() {
+  constructor() public {
     owner = msg.sender;
   }
 
@@ -27,7 +27,7 @@ contract Hashmap is UnsafeHashmap {
    *
    * @return     returns the address of the contract value
    */
-  function get(string _key) public constant returns (address) {
+  function get(string _key) public view returns (address) {
     if (msg.sender != owner) {
       return address(0);
     }
@@ -42,12 +42,12 @@ contract Hashmap is UnsafeHashmap {
    *
    * @return     returns a boolean of containment
    */
-  function contains(string _key) public constant returns (bool) {
+  function contains(string _key) public view returns (bool) {
     if (msg.sender != owner) {
       return false;
     }
 
-    return super.contains(_key);    
+    return super.contains(_key);
   }
 
   /**
@@ -55,7 +55,7 @@ contract Hashmap is UnsafeHashmap {
    *
    * @return     returns size of hashmap
    */
-  function size() public constant returns (uint) {
+  function size() public view returns (uint) {
     if (msg.sender != owner) {
       return 0;
     }
@@ -79,7 +79,7 @@ contract Hashmap is UnsafeHashmap {
     return true;
   }
 
-  function getOwner() public constant returns (address) {
+  function getOwner() public view returns (address) {
     return owner;
   }
 }

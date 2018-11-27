@@ -10,7 +10,7 @@ contract ValidationEngine is RestStatus, ValidationStatus {
   function addRule(bytes32 profileName, bytes32 ruleName, ValidationRuleInterface ruleContractAddress) public {
     ruleSets[profileName][ruleName][true] = ruleContractAddress;
 
-    bytes32[] names = ruleNames[profileName];
+    bytes32[] storage names = ruleNames[profileName];
     names.push(ruleName);
     ruleNames[profileName] = names;
   }
@@ -26,7 +26,7 @@ contract ValidationEngine is RestStatus, ValidationStatus {
   }
 
   function validate(address contractAddress, bytes32 profileName) public returns (uint, uint, bool, bytes32) {
-    bytes32[] names = ruleNames[profileName];
+    bytes32[] storage names = ruleNames[profileName];
     if(names.length == 0) {
       return (RestStatus.NOT_FOUND, ValidationStatus.PROFILE_INVALID, false, "Profile Not Found");
     }
@@ -36,7 +36,10 @@ contract ValidationEngine is RestStatus, ValidationStatus {
         continue;
       }
       ValidationRuleInterface rule = ValidationRuleInterface(temp);
-      var (isValid, status, message) = rule.apply(contractAddress);
+      bool isValid;
+      uint status;
+      bytes32 message;
+      (isValid, status, message) = rule.apply(contractAddress);
       if (!isValid) {
         return (RestStatus.OK, status, false, message);
       }
