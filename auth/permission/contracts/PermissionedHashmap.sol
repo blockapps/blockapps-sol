@@ -1,4 +1,3 @@
-import "../../../rest/contracts/RestStatus.sol";
 import "../../../collections/hashmap/contracts/UnsafeHashmap.sol";
 import "../../../auth/permission/contracts/PermissionManager.sol";
 
