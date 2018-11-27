@@ -42,7 +42,6 @@ describe('UserManager tests', function() {
     const user = yield contract.createUser(args);
     assert.equal(user.account, args.account, 'account');
     assert.equal(user.username, args.username, 'username');
-    assert.equal(user.pwHash, args.pwHash, 'pwHash');
     assert.equal(user.role, args.role, 'role');
   });
 
@@ -176,28 +175,4 @@ describe('UserManager tests', function() {
     assert.equal(notFound.length, 0, JSON.stringify(notFound));
   });
 
-
-  it('User Login', function* () {
-    const uid = util.uid();
-    const args = factory.createUserArgs(account.address, uid);
-    const authArgs = {
-      pwHash: args.pwHash,
-      username: args.username,
-    }
-
-    // auth non-existing - should fail
-    {
-      const result = yield contract.authenticate(authArgs);
-      assert.isDefined(result, 'auth result should be defined');
-      assert.isNotOk(result, 'auth should fail');
-    }
-
-    // create user
-    const user = yield contract.createUser(args);
-    // auth
-    {
-      const result = yield contract.authenticate(authArgs);
-      assert.isOk(result, 'auth should be ok');
-    }
-  });
 });

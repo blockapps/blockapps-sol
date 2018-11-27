@@ -32,7 +32,6 @@ describe('User tests', function() {
     const user = yield contract.getState();
     assert.equal(user.account, args.account, 'account');
     assert.equal(user.username, args.username, 'username');
-    assert.equal(user.pwHash, args.pwHash, 'pwHash');
     assert.equal(user.role, args.role, 'role');
   });
 
@@ -45,22 +44,7 @@ describe('User tests', function() {
     const user = yield userJs.getUser(args.username);
     assert.equal(user.account, args.account, 'account');
     assert.equal(user.username, args.username, 'username');
-    assert.equal(user.pwHash, args.pwHash, 'pwHash');
     assert.equal(user.role, args.role, 'role');
   });
-
-  it('Authenticate', function* () {
-    const uid = util.uid();
-    // create the user with constructor args
-    const args = factory.createUserArgs(admin.address, uid);
-    const contract = yield userJs.uploadContract(admin, args);
-
-    // create the user with constructor args
-    let isAuthenticated;
-    isAuthenticated = yield contract.authenticate(args.pwHash);
-    assert.isOk(isAuthenticated, 'authenticated');
-    isAuthenticated = yield contract.authenticate(util.toBytes32('666'));
-    assert.isNotOk(isAuthenticated, 'not authenticated');
- });
 
 });
