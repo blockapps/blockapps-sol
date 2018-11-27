@@ -8,7 +8,7 @@
     "test:hashmap": "mocha collections/hashmap/test/hashmap.test.js --config config.yaml -b",
     "test:permission": "mocha auth/permission-manager/test/ --config config.yaml -b --api-debug",
     "test:user": "mocha auth/user/test/ --config config.yaml -b ",
-    "test:solc": "find . -name '*.sol' -print | xargs solc '=./' --allow-paths '.' 2>&1"
+    "test:solc": "find . -name '*.sol' -print | xargs solc --allow-paths '.' 2>&1"
   },
   "repository": {
     "type": "git",
