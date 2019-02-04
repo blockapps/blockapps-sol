@@ -1,3 +1,9 @@
+### Version: 2.0.1
+
+#### Minor upgrades
+* 32-bytes limitation removed from Hashmap. Using keccak256 instead of string->b32
+
+------------
 ### Version: 2.0.0
 
 #### Major upgrades
