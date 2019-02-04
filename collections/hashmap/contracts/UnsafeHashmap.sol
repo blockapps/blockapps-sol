@@ -20,7 +20,7 @@ contract UnsafeHashmap is Util {
 
   function put(string _key, address _value) public {
     // save the value
-    keyMap[b32(_key)] = values.length;
+    keyMap[keccak256(_key)] = values.length;
     values.push(_value);
     // save the key if isIterable
     if (isIterable) {
@@ -29,12 +29,12 @@ contract UnsafeHashmap is Util {
   }
 
   function get(string _key) public constant returns (address) {
-    uint index = keyMap[b32(_key)];
+    uint index = keyMap[keccak256(_key)];
     return values[index];
   }
 
   function contains(string _key) public constant returns (bool) {
-    uint index = keyMap[b32(_key)];
+    uint index = keyMap[keccak256(_key)];
     return values[index] != 0;
   }
 
@@ -43,10 +43,10 @@ contract UnsafeHashmap is Util {
   }
 
   function remove(string _key) public {
-    uint index = keyMap[b32(_key)];
+    uint index = keyMap[keccak256(_key)];
     if (index == 0) return;
     // remove the index mapping
-    keyMap[b32(_key)] = 0;
+    keyMap[keccak256(_key)] = 0;
     // remove the value
     values[index] = 0;
     // remove the key
