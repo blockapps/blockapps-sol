@@ -34,7 +34,6 @@ contract UserManager is RestStatus, Util {
   function createUser(
     address _account,
     string _username,
-    bytes32 _pwHash,
     uint _role) returns (uint, address) {
     // only owner can execute
     if (msg.sender != owner) {
@@ -43,21 +42,12 @@ contract UserManager is RestStatus, Util {
 
     // name must be <= 32 bytes
     if (bytes(_username).length > 32) return (RestStatus.BAD_REQUEST, 0);
-    if (_pwHash.length > 32) return (RestStatus.BAD_REQUEST, 0);
     // fail if username exists
     if (exists(_username)) return (RestStatus.BAD_REQUEST, 0);
     // add user
-    User user = new User(_account, _username, _pwHash, _role);
+    User user = new User(_account, _username, _role);
     users.put(_username, user);
     return (RestStatus.CREATED, user);
   }
 
-  function authenticate(string _username, bytes32 _pwHash) returns (bool) {
-    // fail if username doesnt exists
-    if (!exists(_username)) return (false);
-    // get the user
-    address a = getUser(_username);
-    User user = User(a);
-    return user.authenticate(_pwHash);
-  }
 }
