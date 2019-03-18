@@ -6,9 +6,10 @@
   "scripts": {
     "test": "find . -type f -name '*.test.js' ! -path './node_modules/*' | xargs mocha ",
     "test:hashmap": "mocha collections/hashmap/test/hashmap.test.js --config config.yaml -b",
-    "test:permission": "mocha auth/permission-manager/test/ --config config.yaml -b --api-debug",
+    "test:permission": "mocha auth/permission/test/ --config config.yaml -b --api-debug --compilers js:@babel/register",
     "test:user": "mocha auth/user/test/ --config config.yaml -b ",
-    "test:solc": "find . -name '*.sol' -print | xargs solc --allow-paths '.' 2>&1"
+    "test:solc": "find . -name '*.sol' -print | xargs solc --allow-paths '.' 2>&1",
+    "test:abc": "mocha auth/user/test/abc.test.js --config config.yaml -b --compilers js:@babel/register "
   },
   "repository": {
     "type": "git",
@@ -21,15 +22,20 @@
   },
   "homepage": "https://github.com/blockapps/blockapps-sol#readme",
   "dependencies": {
-    "blockapps-rest": "git://github.com/blockapps/blockapps-rest.git",
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.3.4",
+    "@babel/node": "^7.2.2",
+    "@babel/preset-env": "^7.3.4",
+    "@babel/register": "^7.0.0",
+    "blockapps-rest": "^7.0.1",
+    "chai": "^4.0.2",
+    "co": "^4.6.0",
+    "co-mocha": "^1.2.0",
     "eslint": "^4.19.1",
     "eslint-config-airbnb": "^17.0.0",
     "eslint-plugin-import": "^2.13.0",
     "eslint-plugin-jsx-a11y": "^6.0.3",
     "eslint-plugin-react": "^7.10.0",
-    "chai": "^4.0.2",
-    "co": "^4.6.0",
-    "co-mocha": "^1.2.0",
     "mocha": "^3.4.2"
   }
 }
