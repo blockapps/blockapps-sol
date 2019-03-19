@@ -1,30 +1,31 @@
 require('co-mocha')
+const { assert } = require('chai')
 const ba = require('blockapps-rest')
-
-const { config, util, assert, cwd } = ba.common
-const rest = ba[`rest${config.restVersion ? config.restVersion : ''}`];
+const { getYamlFile } = require('../../../util/config');
+const config = getYamlFile('config.yaml');
+const { createUser, call } = ba.default;
+const { utils, parse } = ba
 
 const permissionManagerJs = require('../permissionManager')
-const RestStatus = rest.getFields(`${cwd}/rest/contracts/RestStatus.sol`)
+// const RestStatus = rest.getFields(`${cwd}/rest/contracts/RestStatus.sol`)
 
-const adminName = util.uid('Admin')
+const adminName = utils.uid('Admin')
 const adminPassword = '1234'
-const masterName = util.uid('Master')
+const masterName = utils.uid('Master')
 const masterPassword = '5678'
 
-const { EventLogType } = rest.getEnums(`${cwd}/auth/permission/contracts/PermissionManager.sol`);
+describe('PermissionManager tests', function () {
+  this.timeout(config.timeout);
 
-describe('PermissionManager tests', function() {
-  this.timeout(config.timeout)
-
-  let admin, master
+  let admin, master, EventLogType;
 
   // get ready:  admin-user and manager-contract
   before(function* () {
+    EventLogType = yield parse.parseEnumUsingFile(`${utils.cwd}/auth/permission/contracts/EventLogType.sol`);
     console.log('creating admin')
-    admin = yield rest.createUser(adminName, adminPassword)
+    admin = yield createUser({ username: adminName, password: adminPassword }, { config })
     console.log('creating master')
-    master = yield rest.createUser(masterName, masterPassword)
+    master = yield createUser({ username: masterName, password: masterPassword }, { config })
   })
 
   it('upload', function* () {
@@ -37,7 +38,7 @@ describe('PermissionManager tests', function() {
   it('Grant (address with permissions)', function* () {
     const contract = yield permissionManagerJs.uploadContract(admin, master)
 
-    const uid = util.uid()
+    const uid = utils.uid()
     const args = yield createPermitArgs(uid)
     const permissions = yield contract.grant(args)
     assert.equal(permissions, args.permissions, 'permissions added')
@@ -51,7 +52,7 @@ describe('PermissionManager tests', function() {
   it('Grant Multiple Permissions', function* () {
     const contract = yield permissionManagerJs.uploadContract(admin, master)
 
-    const uid = util.uid()
+    const uid = utils.uid()
     const args = yield createPermitArgs(uid)
     // add permit
     {
@@ -70,7 +71,7 @@ describe('PermissionManager tests', function() {
   it('Get permit', function* () {
     const contract = yield permissionManagerJs.uploadContract(admin, master)
 
-    const uid = util.uid()
+    const uid = utils.uid()
     const permitArgs = yield createPermitArgs(uid)
     yield contract.grant(permitArgs)
     const args = { address: permitArgs.address }
@@ -89,15 +90,17 @@ describe('PermissionManager tests', function() {
     const contract = yield permissionManagerJs.uploadContract(admin, master)
 
     const args = { address: 1234 }
-    yield assert.shouldThrowRest(function* () {
+    try {
       const permissions = yield contract.getPermissions(args)
-    }, RestStatus.NOT_FOUND)
+    } catch (e) {
+      assert.equal(e.status, 404, 'should Throws 404 Not found')
+    }
   })
 
   it.skip('Get permit - history', function* () {
     const contract = yield permissionManagerJs.uploadContract(admin, master)
 
-    const uid = util.uid()
+    const uid = utils.uid()
     const permitArgs = yield createPermitArgs(uid)
     yield contract.grant(permitArgs)
     // found
@@ -122,7 +125,7 @@ describe('PermissionManager tests', function() {
   it('Check permissions', function* () {
     const contract = yield permissionManagerJs.uploadContract(admin, master)
 
-    const uid = util.uid()
+    const uid = utils.uid()
     const permitArgs = yield createPermitArgs(uid)
     yield contract.grant(permitArgs)
     // check
@@ -139,7 +142,7 @@ describe('PermissionManager tests', function() {
   it('Revoke permissions', function* () {
     const contract = yield permissionManagerJs.uploadContract(admin, master)
 
-    const uid = util.uid()
+    const uid = utils.uid()
     const permitArgs = yield createPermitArgs(uid)
     yield contract.grant(permitArgs)
     // get permissions
@@ -159,79 +162,115 @@ describe('PermissionManager tests', function() {
     }
   })
 
+  // TODO: check this in last
   it('Revoke - 404', function* () {
     const contract = yield permissionManagerJs.uploadContract(admin, master)
 
     const args = { address: 1234 }
-    yield assert.shouldThrowRest(function* () {
+    // TODO: Add shouldThrowRest in util or blockapps-rest
+    // yield assert.shouldThrowRest(function* () {
+    //   yield contract.revoke(args)
+    // }, RestStatus.BAD_REQUEST)
+    try {
       yield contract.revoke(args)
-    }, RestStatus.BAD_REQUEST)
+    } catch (e) {
+      assert.equal(e.status, '400', 'should throws 404 Not found')
+    }
   })
 
   it('Transfer Ownership - AUTHORIZED', function* () {
-    const uid = util.uid()
-    const newOwner = yield rest.createUser('NewOwner_' + uid, '' + uid)
+    const uid = utils.uid()
+    const newOwner = yield createUser({username: `NewOwner_${uid}`, password: '1234'}, { config })
     const contract = yield permissionManagerJs.uploadContract(admin, master)
     // transfer ownership to a new admin, by the master
     {
-      const args = { newOwner: newOwner.address }
-      const method = 'transferOwnership'
-      const [restStatus] = yield rest.callMethod(master, contract, method, util.usc(args))
-      assert.equal(restStatus, RestStatus.OK, 'should succeed')
+      const callArgs = {
+        contract,
+        method: 'transferOwnership',
+        args: utils.usc({ newOwner: newOwner.address })
+      }
+
+      const [restStatus] = yield call(master, callArgs, { config })
+      assert.equal(restStatus, 200, 'should succeed')
     }
   })
 
   it('Transfer Ownership - positive case', function* () {
-    const uid = util.uid()
-    const newOwner = yield rest.createUser('NewOwner_' + uid, '' + uid)
+    const uid = utils.uid()
+    const newOwner = yield createUser({username: `NewOwner_${uid}`, password: '1234'}, { config })
     const contract = yield permissionManagerJs.uploadContract(admin, master)
     // admin works
     const args = yield createPermitArgs(uid)
     yield contract.grant(args)
     // new admin unauthorized
     {
-      const method = 'grant'
-      const [restStatus, permissions] = yield rest.callMethod(newOwner, contract, method, util.usc(args))
-      assert.equal(restStatus, RestStatus.UNAUTHORIZED, 'should fail')
+      const callArgs = {
+        contract,
+        method: 'grant',
+        args: utils.usc(args)
+      }
+      const [restStatus, permissions] = yield call(newOwner, callArgs, { config })
+      assert.equal(restStatus, 401, 'should fail')
     }
     // transfer ownership - must be master
     {
       const args = { newOwner: newOwner.address }
-      const method = 'transferOwnership'
-      const [restStatus] = yield rest.callMethod(master, contract, method, util.usc(args))
-      assert.equal(restStatus, RestStatus.OK, 'should succeed')
+      const callArgs = {
+        contract,
+        method: 'transferOwnership',
+        args: utils.usc(args)
+      }
+
+      const [restStatus] = yield call(master, callArgs, { config })
+      assert.equal(restStatus, '200', 'should succeed')
     }
     // old admin unauthorized
     {
-      const method = 'grant'
-      const [restStatus, permissions] = yield rest.callMethod(admin, contract, method, util.usc(args))
-      assert.equal(restStatus, RestStatus.UNAUTHORIZED, 'should fail')
+      const callArgs = {
+        contract,
+        method: 'grant',
+        args: utils.usc(args)
+      }
+
+      const [restStatus, permissions] = yield call(admin, callArgs, { config })
+      assert.equal(restStatus, '401', 'should fail')
     }
     // new admin works
     {
-      const method = 'grant'
-      const [restStatus, permissions] = yield rest.callMethod(newOwner, contract, method, util.usc(args))
-      assert.equal(restStatus, RestStatus.OK, 'should succeed')
+      const callArgs = {
+        contract,
+        method: 'grant',
+        args: utils.usc(args)
+      }
+
+      const [restStatus, permissions] = yield call(newOwner, callArgs, { config })
+      assert.equal(restStatus, '200', 'should succeed')
     }
   })
 
   it('Transfer Ownership - UNAUTHORIZED', function* () {
-    const uid = util.uid()
+    const uid = utils.uid()
     const contract = yield permissionManagerJs.uploadContract(admin, master)
     // transfer ownership to attacker
     {
-      const attacker = yield rest.createUser('Attacker_' + uid, '' + uid)
+      const attacker = yield createUser({username: `Attacker_${uid}`, password: '1234'}, { config })
       const args = { newOwner: attacker.address }
-      const method = 'transferOwnership'
-      const [restStatus, permissions] = yield rest.callMethod(attacker, contract, method, util.usc(args))
-      assert.equal(restStatus, RestStatus.UNAUTHORIZED, 'should fail')
+      
+      const callArgs = {
+        contract,
+        method: 'transferOwnership',
+        args: utils.usc(args)
+      }
+
+      const [restStatus, permissions] = yield call(attacker, callArgs, { config })
+      assert.equal(restStatus, '401', 'should fail')
     }
   })
 
   it('EventLog - Check permissions', function* () {
     const contract = yield permissionManagerJs.uploadContract(admin, master)
 
-    const uid = util.uid()
+    const uid = utils.uid()
     const permitArgs = yield createPermitArgs(uid)
     yield contract.grant(permitArgs)
     // check OK - should not be logged
@@ -256,14 +295,14 @@ describe('PermissionManager tests', function() {
       assert.equal(eventLogEntry.id, '', 'id')
       assert.equal(eventLogEntry.adrs, args.address, 'address')
       assert.equal(eventLogEntry.permissions, args.permissions, 'permissions')
-      assert.equal(eventLogEntry.result, RestStatus.UNAUTHORIZED, 'result')
+      assert.equal(eventLogEntry.result, '401', 'result')
     }
   })
 
   it('EventLog - Grant', function* () {
     const contract = yield permissionManagerJs.uploadContract(admin, master)
 
-    const uid = util.uid()
+    const uid = utils.uid()
     const args = yield createPermitArgs(uid)
     yield contract.grant(args)
     // event log
@@ -276,13 +315,13 @@ describe('PermissionManager tests', function() {
     assert.equal(eventLogEntry.id, args.id, 'id')
     assert.equal(eventLogEntry.adrs, args.address, 'address')
     assert.equal(eventLogEntry.permissions, args.permissions, 'permissions')
-    assert.equal(eventLogEntry.result, RestStatus.OK, 'result')
+    assert.equal(eventLogEntry.result, '200', 'result')
   })
 
   it('EventLog - Revoke', function* () {
     const contract = yield permissionManagerJs.uploadContract(admin, master)
 
-    const uid = util.uid()
+    const uid = utils.uid()
     const permitArgs = yield createPermitArgs(uid)
     yield contract.grant(permitArgs)
     // revoke
@@ -300,13 +339,14 @@ describe('PermissionManager tests', function() {
     assert.equal(eventLogEntry.id, '', 'id')
     assert.equal(eventLogEntry.adrs, permitArgs.address, 'address')
     assert.equal(eventLogEntry.permissions, 0, 'permissions')
-    assert.equal(eventLogEntry.result, RestStatus.OK, 'result')
+    assert.equal(eventLogEntry.result, '200', 'result')
   })
 })
 
 
 function* createPermitArgs(uid) {
-  const user = yield rest.createUser(uid, uid)
+  // TODO: make it as a args 
+  const user = yield createUser({ username: `username_${uid}`, password: adminPassword }, { config })
   const permissions = 0x3
 
   const args = {

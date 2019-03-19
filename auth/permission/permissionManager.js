@@ -1,14 +1,16 @@
 const ba = require('blockapps-rest');
-const util = ba.common.util;
-const BigNumber = ba.common.BigNumber;
-const config = ba.common.config;
-const rest = ba[`rest${config.restVersion ? config.restVersion : ''}`];
+const { utils, importer } = ba;
+const { getYamlFile } = require('../../util/config');
+const { createContract, getState, call } = ba.default;
+const config = getYamlFile('config.yaml');
+const logger = console
 
 const contractName = 'PermissionManager';
-const contractFilename = `${config.libPath}/auth/permission/contracts/PermissionManager.sol`;
-const RestStatus = rest.getFields(`${config.libPath}/rest/contracts/RestStatus.sol`);
+const contractFilename = `./auth/permission/contracts/PermissionManager.sol`;
+// TODO: do some research on getFields
+// const RestStatus = rest.getFields(`./rest/contracts/RestStatus.sol`);
 
-util.bitmaskToEnumString = function (bitmask, bitmaskEnum) {
+utils.bitmaskToEnumString = function (bitmask, bitmaskEnum) {
   const strings = []
   for (let i = 0; i < bitmaskEnum.MAX; i++) {
     const mask = (1 << i)
@@ -23,11 +25,16 @@ util.bitmaskToEnumString = function (bitmask, bitmaskEnum) {
 function* uploadContract(admin, master) {
   // NOTE: in production, the contract is created and owned by the AdminInterface
   // for testing purposes the creator is the admin user
-  const args = {
-    owner: admin.address,
-    master: master.address,
+  const contractArgs = {
+    name: contractName,
+    source: yield importer.combine(contractFilename),
+    args: {
+      _master: master.address,
+      _owner: admin.address
+    }
   }
-  const contract = yield rest.uploadContract(admin, contractName, contractFilename, util.usc(args));
+
+  const contract = yield createContract(admin, contractArgs, { config, logger })
   contract.src = 'removed';
   return bind(admin, contract);
 }
@@ -35,14 +42,14 @@ function* uploadContract(admin, master) {
 function* createPermissionsAdmin(admin, master, permissions) {
   const contract = yield uploadContract(admin, master);
   // add permission to create and modify contracts
-  const args = {address: admin.address, id: admin.name, permissions: permissions};
+  const args = { address: admin.address, id: admin.name, permissions: permissions };
   yield contract.grant(args);
   return contract;
 }
 
 function bind(admin, contract) {
   contract.getState = function* () {
-    return yield rest.getState(contract);
+    return yield getState(contract, { config });
   }
   contract.grant = function* (args) {
     return yield grant(admin, contract, args);
@@ -79,11 +86,15 @@ function bindAddress(admin, address) {
 // throws: ErrorCodes
 // returns: updated permissions
 function* grant(admin, contract, args) {
-  rest.verbose('grant', args);
   // function grant(address _address, uint _permissions) returns (ErrorCodes) {
-  const method = 'grant';
-  const [restStatus, permissions] = yield rest.callMethod(admin, contract, method, util.usc(args));
-  if (restStatus != RestStatus.OK) {
+  const callArgs = {
+    contract,
+    method: 'grant',
+    args: utils.usc(args)
+  }
+
+  const [restStatus, permissions] = yield call(admin, callArgs, { config });
+  if (restStatus != '200') {
     throw new Error(restStatus);
   }
   return permissions;
@@ -92,12 +103,16 @@ function* grant(admin, contract, args) {
 // throws: ErrorCodes
 // returns: permissions
 function* getPermissions(admin, contract, args) {
-  rest.verbose('getPermissions', args);
   // function getPermissions(address _address) returns (ErrorCodes, uint) {
-  const method = 'getPermissions';
-  const [restStatus, permissions] = yield rest.callMethod(admin, contract, method, util.usc(args));
-  if (restStatus != RestStatus.OK) {
-    throw new rest.RestError(restStatus, method, args);
+  const callArgs = {
+    contract,
+    method: 'getPermissions',
+    args: utils.usc(args)
+  }
+
+  const [restStatus, permissions] = yield call(admin, callArgs, { config });
+  if (restStatus != '200') {
+    throw new utils.RestError(restStatus, callArgs.method, callArgs.args);
   }
   return permissions;
 }
@@ -105,11 +120,15 @@ function* getPermissions(admin, contract, args) {
 // throws: ErrorCodes
 // returns: true if permitted
 function* check(admin, contract, args) {
-  rest.verbose('check', args);
   // function check(address _address, uint _permissions) returns (ErrorCodes) {
-  const method = 'check';
-  const [restStatus] = yield rest.callMethod(admin, contract, method, util.usc(args));
-  if (restStatus != RestStatus.OK) {
+  const callArgs = {
+    contract,
+    method: 'check',
+    args: utils.usc(args)
+  }
+
+  const [restStatus] = yield call(admin, callArgs, { config });
+  if (restStatus != '200') {
     return false;
   }
   return true;
@@ -117,22 +136,31 @@ function* check(admin, contract, args) {
 
 // throws: ErrorCodes
 function* revoke(admin, contract, args) {
-  rest.verbose('revoke', args);
   // function revoke(address _address) returns (ErrorCodes) {
-  const method = 'revoke';
-  const [restStatus] = yield rest.callMethod(admin, contract, method, util.usc(args));
-  if (restStatus != RestStatus.OK) {
-    throw new rest.RestError(restStatus, method, args);
+  const callArgs = {
+    contract,
+    method: 'revoke',
+    args: utils.usc(args)
   }
-  return RestStatus.OK;
+
+  const [restStatus] = yield call(admin, callArgs, { config });
+  if (restStatus != '200') {
+    throw new utils.RestError(restStatus, callArgs.method, callArgs.args);
+  }
+  return '200';
 }
 
 // transferOwnership
 function* transferOwnership(admin, contract, args) {
-  const method = "transferOwnership";
-  const [restStatus] = yield rest.callMethod(admin, contract, method, util.usc(args));
+  const callArgs = {
+    contract,
+    method: 'transferOwnership',
+    args: utils.usc(args)
+  }
+  
+  const [restStatus] = yield call(admin, callArgs, {});
   if (restStatus != RestStatus.OK) {
-    throw new rest.RestError(restStatus, method, args);
+    throw new RestError(restStatus, method, args);
   }
   return RestStatus.OK;
 }
@@ -142,7 +170,7 @@ function* listPermits(admin, contract, args) {
   const { permits } = yield contract.getState()
   const permitsJson = permits.map((permit) => {
     permit.permissionsHex = Number(permit.permissions).toString(16)
-    permit.strings = util.bitmaskToEnumString(permit.permissions, args.enum)
+    permit.strings = utils.bitmaskToEnumString(permit.permissions, args.enum)
     return permit
   })
   return permitsJson
@@ -152,7 +180,7 @@ function* listEvents(admin, contract, args) {
   const { eventLog } = yield contract.getState()
   const eventsJson = eventLog.map((event) => {
     event.permissionsHex = Number(event.permissions).toString(16)
-    event.strings = util.bitmaskToEnumString(event.permissions, args.enum)
+    event.strings = utils.bitmaskToEnumString(event.permissions, args.enum)
     return event
   })
   return eventsJson

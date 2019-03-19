@@ -36,6 +36,8 @@
     "eslint-plugin-import": "^2.13.0",
     "eslint-plugin-jsx-a11y": "^6.0.3",
     "eslint-plugin-react": "^7.10.0",
+    "fs": "^0.0.1-security",
+    "js-yaml": "^3.12.2",
     "mocha": "^3.4.2"
   }
 }
