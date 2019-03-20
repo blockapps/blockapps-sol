@@ -1,8 +1,11 @@
 import { rest, util, importer } from 'blockapps-rest';
-const { createContract, getState, call } = rest;
+const { createContract, getState, call, searchUntil } = rest;
 
 import { getYamlFile } from '../../util/config';
 const config = getYamlFile('config.yaml');
+
+const logger = console
+const options = { config, logger }
 
 const contractName = 'User';
 const contractFilename = `${util.cwd}/${config.libPath}/auth/user/contracts/User.sol`;
@@ -15,8 +18,6 @@ async function uploadContract(admin, args) {
   }
 
   const contract = await createContract(admin, contractArgs, { config });
-  // TODO: Please confirm that it is needed
-  // await compileSearch(contract);
   contract.src = 'removed';
   return bind(admin, contract);
 }
@@ -31,15 +32,6 @@ function bind(admin, contract) {
   return contract;
 }
 
-// TODO: remove if not in use
-async function compileSearch(contract) {
-  if (await rest.isSearchable(contract.codeHash)) {
-    return;
-  }
-  const searchable = [contractName];
-  await rest.compileSearch(searchable, contractName, contractFilename);
-}
-
 async function getUsers(addresses) { // FIXME must break to batches of 50 addresses
   const csv = util.toCsv(addresses); // generate csv string
   const results = await rest.query(`${contractName}?address=in.${csv}`);
@@ -51,7 +43,15 @@ async function getUser(username) {
 }
 
 async function getUserByAddress(address) {
-  return (await rest.waitQuery(`${contractName}?address=eq.${address}`, 1))[0];
+  // TODO:
+  // RESUME: after fixing work from rest side. Please continue from here
+  function predicate(r) {  console.log("running -----------", r); r.length >= 1}
+
+  const contract = { name: contractName, address }
+  const response = await searchUntil(contract, predicate, { config, logger, isAsync: true, query: { address: `eq.${address}`} })
+  console.log("-------------------------------", response)
+  return response
+  // return (await rest.waitQuery(`${contractName}?address=eq.${address}`, 1))[0];
 }
 
 async function authenticate(admin, contract, pwHash) {
@@ -73,8 +73,6 @@ async function authenticate(admin, contract, pwHash) {
 export {
   uploadContract,
   bind,
-  compileSearch,
-
   // constants
   contractName,
 

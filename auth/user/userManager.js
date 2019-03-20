@@ -22,8 +22,6 @@ async function uploadContract(admin) {
     args: util.usc(args)
   }
   const contract = await createContract(admin, contractArgs, { config, logger });
-  // TODO: Please confirm that it is needed
-  // await compileSearch(contract);
   contract.src = 'removed';
   return bind(admin, contract);
 }
@@ -48,17 +46,6 @@ function bind(admin, contract) {
     return await authenticate(admin, contract, args);
   }
   return contract;
-}
-
-// TODO: remove if not in use
-async function compileSearch(contract) {
-  if (await rest.isSearchable(contract.codeHash)) {
-    return;
-  }
-  // compile + dependencies
-  const searchable = [userJs.contractName, contractName];
-  await rest.compileSearch(searchable, contractName, contractFilename);
-
 }
 
 // throws: RestStatus
@@ -115,7 +102,7 @@ async function getUser(admin, contract, username) {
     throw new rest.RestError('404', method, args);
   }
   // found - query for the full user record
-  return await userJs.getUserByAddress(contract, address);
+  return await userJs.getUserByAddress(address);
 }
 
 async function getUsers(admin, contract) {
@@ -139,7 +126,6 @@ async function authenticate(admin, contract, args) {
 
 export {
   uploadContract,
-  compileSearch,
   contractName,
   bind
 };
