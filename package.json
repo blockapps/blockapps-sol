@@ -6,7 +6,7 @@
   "scripts": {
     "mocha-babel": "node_modules/.bin/mocha --require @babel/register",
     "test": "find . -type f -name '*.test.js' ! -path './node_modules/*' | xargs mocha ",
-    "test:hashmap": "yarn mocha-babel collections/hashmap/test/hashmap.test.js --config config.yaml -b",
+    "test:hashmap": "yarn mocha-babel collections/hashmap/test/ --config config.yaml -b",
     "test:permission": "yarn mocha-babel auth/permission/test/ --config config.yaml -b --api-debug",
     "test:user": "auth/user/test/ --config config.yaml -b ",
     "test:solc": "find . -name '*.sol' -print | xargs solc --allow-paths '.' 2>&1"
