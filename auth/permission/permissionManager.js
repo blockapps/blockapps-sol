@@ -2,12 +2,10 @@ const { rest, util, importer } = require('blockapps-rest');
 const { getYamlFile } = require('../../util/config');
 const { createContract, getState, call, RestError } = rest;
 const config = getYamlFile('config.yaml');
-// const logger = console
+// TODO: const logger = console
 
 const contractName = 'PermissionManager';
 const contractFilename = `./auth/permission/contracts/PermissionManager.sol`;
-// TODO: do some research on getFields
-// const RestStatus = rest.getFields(`./rest/contracts/RestStatus.sol`);
 
 util.bitmaskToEnumString = function (bitmask, bitmaskEnum) {
   const strings = []
@@ -24,13 +22,11 @@ util.bitmaskToEnumString = function (bitmask, bitmaskEnum) {
 function* uploadContract(admin, master) {
   // NOTE: in production, the contract is created and owned by the AdminInterface
   // for testing purposes the creator is the admin user
+  const args = { master: master.address, owner: admin.address };
   const contractArgs = {
     name: contractName,
     source: yield importer.combine(contractFilename),
-    args: {
-      _master: master.address,
-      _owner: admin.address
-    }
+    args: util.usc(args)
   }
 
   const contract = yield createContract(admin, contractArgs, { config })
@@ -143,6 +139,7 @@ function* revoke(admin, contract, args) {
   }
 
   const [restStatus] = yield call(admin, callArgs, { config });
+  // TODO: reststatus
   if (restStatus != '200') {
     throw new RestError(restStatus, callArgs.method, callArgs.args);
   }
@@ -158,10 +155,10 @@ function* transferOwnership(admin, contract, args) {
   }
   
   const [restStatus] = yield call(admin, callArgs, {});
-  if (restStatus != RestStatus.OK) {
+  if (restStatus != '200') {
     throw new RestError(restStatus, method, args);
   }
-  return RestStatus.OK;
+  return '200';
 }
 
 // list
