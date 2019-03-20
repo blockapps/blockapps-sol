@@ -1,12 +1,12 @@
 // QUEST: is this function is good to be here or we can move to rest ?
-const fs = require('fs');
-const yaml = require('js-yaml');
+import fs from 'fs';
+import yaml from 'js-yaml';
 
 // read a yaml or die
 function getYamlFile(yamlFilename) {
-    return yaml.safeLoad(fs.readFileSync(yamlFilename, 'utf8'));
+  return yaml.safeLoad(fs.readFileSync(yamlFilename, 'utf8'));
 }
 
-module.exports = {
+export {
   getYamlFile
 };

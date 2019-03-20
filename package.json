@@ -4,12 +4,12 @@
   "description": "BlockApps Solidity Lib",
   "main": "",
   "scripts": {
+    "mocha-babel": "node_modules/.bin/mocha --require @babel/register",
     "test": "find . -type f -name '*.test.js' ! -path './node_modules/*' | xargs mocha ",
-    "test:hashmap": "mocha collections/hashmap/test/hashmap.test.js --config config.yaml -b",
-    "test:permission": "mocha auth/permission/test/ --config config.yaml -b --api-debug --compilers js:@babel/register",
-    "test:user": "mocha auth/user/test/ --config config.yaml -b ",
-    "test:solc": "find . -name '*.sol' -print | xargs solc --allow-paths '.' 2>&1",
-    "test:abc": "mocha auth/user/test/abc.test.js --config config.yaml -b --compilers js:@babel/register "
+    "test:hashmap": "yarn mocha-babel collections/hashmap/test/hashmap.test.js --config config.yaml -b",
+    "test:permission": "yarn mocha-babel auth/permission/test/ --config config.yaml -b --api-debug",
+    "test:user": "auth/user/test/ --config config.yaml -b ",
+    "test:solc": "find . -name '*.sol' -print | xargs solc --allow-paths '.' 2>&1"
   },
   "repository": {
     "type": "git",

@@ -1,108 +1,109 @@
-const { rest, util, importer } = require('blockapps-rest');
-const { getYamlFile } = require('../../util/config');
+
+import { rest, util, importer } from 'blockapps-rest';
 const { createContract, getState, call } = rest;
 
+import { getYamlFile } from '../../util/config';
 const config = getYamlFile('config.yaml');
 
 const contractName = 'UnsafeHashmap'
 const contractFilename = `${config.libPath}/collections/hashmap/contracts/UnsafeHashmap.sol`
 
-function* uploadContract(admin) {
+async function uploadContract(admin) {
   const args = {}
 
   const contractArgs = {
     name: contractName,
-    source: yield importer.combine(contractFilename),
+    source: await importer.combine(contractFilename),
     args: util.usc(args)
   }
 
-  const contract = yield createContract(admin, contractArgs, { config })
+  const contract = await createContract(admin, contractArgs, { config })
   contract.src = 'removed'
   return bind(admin, contract)
 }
 
 function bind(admin, _contract) {
   const contract = _contract
-  contract.getState = function* () {
-    return yield getState(contract, { config })
+  contract.getState = async function () {
+    return await getState(contract, { config })
   }
   // TODO: Why we are using this function which is not in use
-  // contract.getStateVar = function* (args) {
-  //   return yield rest.getStateVar(contract, args.name, args.count, args.offset, args.length)
+  // contract.getStateVar = async function (args) {
+  //   return await rest.getStateVar(contract, args.name, args.count, args.offset, args.length)
   // }
-  contract.put = function* (args) {
-    return yield put(admin, contract, args)
+  contract.put = async function (args) {
+    return await put(admin, contract, args)
   }
-  contract.get = function* (args) {
-    return yield get(admin, contract, args)
+  contract.get = async function (args) {
+    return await get(admin, contract, args)
   }
-  contract.contains = function* (args) {
-    return yield contains(admin, contract, args)
+  contract.contains = async function (args) {
+    return await contains(admin, contract, args)
   }
-  contract.size = function* (args) {
-    return yield size(admin, contract, args)
+  contract.size = async function (args) {
+    return await size(admin, contract, args)
   }
-  contract.remove = function* (args) {
-    return yield remove(admin, contract, args)
+  contract.remove = async function (args) {
+    return await remove(admin, contract, args)
   }
   return contract
 }
 
-function* put(admin, contract, args) {
+async function put(admin, contract, args) {
   const callArgs = {
     contract,
     method: 'put',
     args: util.usc(args)
   }
 
-  const result = yield call(admin, callArgs, { config })
+  const result = await call(admin, callArgs, { config })
   return result
 }
 
-function* get(admin, contract, args) {
+async function get(admin, contract, args) {
   const callArgs = {
     contract,
     method: 'get',
     args: util.usc(args)
   }
 
-  const result = yield call(admin, callArgs, { config })
+  const result = await call(admin, callArgs, { config })
   return result[0]
 }
 
-function* contains(admin, contract, args) {
+async function contains(admin, contract, args) {
   const callArgs = {
     contract,
     method: 'contains',
     args: util.usc(args)
   }
 
-  const result = yield call(admin, callArgs, { config })
+  const result = await call(admin, callArgs, { config })
   return result[0] == true
 }
 
-function* size(admin, contract, args) {
+async function size(admin, contract, args) {
   const callArgs = {
     contract,
     method: 'size',
     args: util.usc(args)
   }
 
-  const result = yield call(admin, callArgs, { config })
+  const result = await call(admin, callArgs, { config })
   return parseInt(result[0])
 }
 
-function* remove(admin, contract, args) {
+async function remove(admin, contract, args) {
   const callArgs = {
     contract,
     method: 'remove',
     args: util.usc(args)
   }
 
-  yield call(admin, callArgs, { config })
+  await call(admin, callArgs, { config })
 }
 
-module.exports = {
+export {
   bind,
   uploadContract,
 }
