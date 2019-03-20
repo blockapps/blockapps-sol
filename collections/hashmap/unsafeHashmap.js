@@ -1,14 +1,22 @@
-const ba = require('blockapps-rest')
+const { rest, util, importer } = require('blockapps-rest');
+const { getYamlFile } = require('../../util/config');
+const { createContract, getState, call } = rest;
 
-const { config, util } = ba.common
-const rest = ba[`rest${config.restVersion ? config.restVersion : ''}`];
+const config = getYamlFile('config.yaml');
 
 const contractName = 'UnsafeHashmap'
 const contractFilename = `${config.libPath}/collections/hashmap/contracts/UnsafeHashmap.sol`
 
 function* uploadContract(admin) {
   const args = {}
-  const contract = yield rest.uploadContract(admin, contractName, contractFilename, util.usc(args))
+
+  const contractArgs = {
+    name: contractName,
+    source: yield importer.combine(contractFilename),
+    args: util.usc(args)
+  }
+
+  const contract = yield createContract(admin, contractArgs, { config })
   contract.src = 'removed'
   return bind(admin, contract)
 }
@@ -16,11 +24,12 @@ function* uploadContract(admin) {
 function bind(admin, _contract) {
   const contract = _contract
   contract.getState = function* () {
-    return yield rest.getState(contract)
+    return yield getState(contract, { config })
   }
-  contract.getStateVar = function* (args) {
-    return yield rest.getStateVar(contract, args.name, args.count, args.offset, args.length)
-  }
+  // TODO: Why we are using this function which is not in use
+  // contract.getStateVar = function* (args) {
+  //   return yield rest.getStateVar(contract, args.name, args.count, args.offset, args.length)
+  // }
   contract.put = function* (args) {
     return yield put(admin, contract, args)
   }
@@ -40,37 +49,57 @@ function bind(admin, _contract) {
 }
 
 function* put(admin, contract, args) {
-  rest.verbose('put', args)
-  const method = 'put'
-  const result = yield rest.callMethod(admin, contract, method, util.usc(args))
+  const callArgs = {
+    contract,
+    method: 'put',
+    args: util.usc(args)
+  }
+
+  const result = yield call(admin, callArgs, { config })
   return result
 }
 
 function* get(admin, contract, args) {
-  rest.verbose('get', args)
-  const method = 'get'
-  const result = yield rest.callMethod(admin, contract, method, util.usc(args))
+  const callArgs = {
+    contract,
+    method: 'get',
+    args: util.usc(args)
+  }
+
+  const result = yield call(admin, callArgs, { config })
   return result[0]
 }
 
 function* contains(admin, contract, args) {
-  rest.verbose('contains', args)
-  const method = 'contains'
-  const result = yield rest.callMethod(admin, contract, method, util.usc(args))
+  const callArgs = {
+    contract,
+    method: 'contains',
+    args: util.usc(args)
+  }
+
+  const result = yield call(admin, callArgs, { config })
   return result[0] == true
 }
 
 function* size(admin, contract, args) {
-  rest.verbose('size', args)
-  const method = 'size'
-  const result = yield rest.callMethod(admin, contract, method, util.usc(args))
+  const callArgs = {
+    contract,
+    method: 'size',
+    args: util.usc(args)
+  }
+
+  const result = yield call(admin, callArgs, { config })
   return parseInt(result[0])
 }
 
 function* remove(admin, contract, args) {
-  rest.verbose('remove', args)
-  const method = 'remove'
-  yield rest.callMethod(admin, contract, method, util.usc(args))
+  const callArgs = {
+    contract,
+    method: 'remove',
+    args: util.usc(args)
+  }
+
+  yield call(admin, callArgs, { config })
 }
 
 module.exports = {

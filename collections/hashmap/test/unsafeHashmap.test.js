@@ -1,8 +1,10 @@
 require('co-mocha')
 
-const ba = require('blockapps-rest')
-const { config, util, assert } = ba.common
-const rest = ba[`rest${config.restVersion ? config.restVersion : ''}`];
+const { assert } = require('chai')
+const { rest, util } = require('blockapps-rest');
+const { getYamlFile } = require('../../../util/config');
+const { createUser } = rest;
+const config = getYamlFile('config.yaml');
 
 const unsafeHashmapJs = require('../unsafeHashmap')
 
@@ -15,7 +17,8 @@ describe('UnsafeHashmap', function () {
   let admin
 
   before(function* () {
-    admin = yield rest.createUser(adminName, adminPassword)
+    console.log('creating admin')
+    admin = yield createUser({username: adminName, password: adminPassword}, { config })
   })
 
   it('put', function* () {
@@ -55,11 +58,11 @@ describe('UnsafeHashmap', function () {
     const iuid = util.iuid()
     const args = factory.createEntity(iuid)
     yield hashmap.put(args)
-    const size1 = yield hashmap.size()
+    const size1 = yield hashmap.size({})
     assert.equal(size1, 1, 'size: 1')
     args.key += 'x'
     yield hashmap.put(args)
-    const size2 = yield hashmap.size()
+    const size2 = yield hashmap.size({})
     assert.equal(size2, 2, 'size: 2')
   })
 
