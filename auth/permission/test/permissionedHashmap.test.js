@@ -44,8 +44,11 @@ describe('PermissionedHashmap tests', function() {
     const contract = yield permissionedHashmapJs.uploadContract(admin, hashmapPermissionManager)
     const iuid = util.iuid();
     const args = factory.createEntity(iuid);
-    const method = 'put'
-    const result = yield rest.callMethod(attacker, contract, method, util.usc(args))
+    const method = 'put';
+    const chainId = '';
+    const value = undefined;
+    const doNotResolve = undefined;
+    const result = yield rest.callMethod(attacker, contract, method, util.usc(args), value, doNotResolve, chainId)
 
     const state = yield contract.getState();
     assert.equal(state.values.length, 1, 'length 1 - did not put');
@@ -126,8 +129,11 @@ describe('PermissionedHashmap tests', function() {
       assert.equal(result, true, 'contains: true');
     }
     // remove
-    const method = 'remove'
-    const result = yield rest.callMethod(attacker, contract, method, util.usc(args))
+    const method = 'remove';
+    const chainId = '';
+    const value = undefined;
+    const doNotResolve = undefined;
+    const result = yield rest.callMethod(attacker, contract, method, util.usc(args), value, doNotResolve, chainId)
 
     yield contract.getState()
     // still contained - was not removed
@@ -146,14 +152,14 @@ describe('PermissionedHashmap tests', function() {
  * @returns {object} the contract
  */
 
-function* createHashmapPermissionManager(admin, master) {
+function* createHashmapPermissionManager(admin, master, doNotResolve, txParams, chainId) {
   const contractName = 'HashmapPermissionManager';
   const contractFilename = `${config.libPath}/auth/permission/test/fixtures/HashmapPermissionManager.sol`;
   const args = {
     owner: admin.address,
     master: master.address,
   }
-  const hashmapPermissionManager = yield rest.uploadContract(admin, contractName, contractFilename, util.usc(args));
+  const hashmapPermissionManager = yield rest.uploadContract(admin, contractName, contractFilename, util.usc(args), doNotResolve, txParams, chainId);
   return hashmapPermissionManager
 }
 
