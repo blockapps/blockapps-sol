@@ -10,6 +10,6 @@ const createUserArgs = function(accountAddress, uid, role=1) {
   return args;
 }
 
-module.exports = {
-  createUserArgs: createUserArgs,
+export {
+  createUserArgs
 }
