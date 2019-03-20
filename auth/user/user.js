@@ -1,24 +1,31 @@
-const ba = require('blockapps-rest');
-const util = ba.common.util;
-const config = ba.common.config;
-const rest = ba[`rest${config.restVersion ? config.restVersion : ''}`];
+const { rest, util, importer } = require('blockapps-rest');
+const { getYamlFile } = require('../../util/config');
+const { createContract, getState, call, search } = rest;
+const config = getYamlFile('config.yaml');
 
 const contractName = 'User';
-const contractFilename = `${ba.common.cwd}/${config.libPath}/auth/user/contracts/User.sol`;
+const contractFilename = `${util.cwd}/${config.libPath}/auth/user/contracts/User.sol`;
 
-const RestStatus = rest.getFields(`${config.libPath}/rest/contracts/RestStatus.sol`);
-const UserRole = rest.getEnums(`${config.libPath}/auth/user/contracts/UserRole.sol`).UserRole;
+// const RestStatus = rest.getFields(`${config.libPath}/rest/contracts/RestStatus.sol`);
+// const UserRole = rest.getEnums(`${config.libPath}/auth/user/contracts/UserRole.sol`).UserRole;
 
 function* uploadContract(admin, args) {
-  const contract = yield rest.uploadContract(admin, contractName, contractFilename, util.usc(args));
-  yield compileSearch(contract);
+  const contractArgs = {
+    name: contractName,
+    source: yield importer.combine(contractFilename),
+    args: util.usc(args)
+  }
+
+  const contract = yield createContract(admin, contractArgs, { config });
+  // TODO: Please confirm that it is needed
+  // yield compileSearch(contract);
   contract.src = 'removed';
   return bind(admin, contract);
 }
 
 function bind(admin, contract) {
   contract.getState = function* () {
-    return yield rest.getState(contract);
+    return yield getState(contract, { config });
   }
   contract.authenticate = function* (pwHash) {
     return yield authenticate(admin, contract, pwHash);
@@ -26,9 +33,8 @@ function bind(admin, contract) {
   return contract;
 }
 
+// TODO: remove if not in use
 function* compileSearch(contract) {
-  rest.verbose('compileSearch', contractName);
-
   if (yield rest.isSearchable(contract.codeHash)) {
     return;
   }
@@ -51,13 +57,16 @@ function* getUserByAddress(address) {
 }
 
 function* authenticate(admin, contract, pwHash) {
-  rest.verbose('authenticate', pwHash);
   // function authenticate(bytes32 _pwHash) return (bool) {
-  const method = 'authenticate';
   const args = {
-    _pwHash: pwHash,
+    pwHash: pwHash,
   };
-  const result = yield rest.callMethod(admin, contract, method, args);
+  const callArgs = {
+    contract,
+    method: 'authenticate',
+    args: util.usc(args)
+  }
+  const result = yield call(admin, callArgs, { config });
   const isAuthenticated = (result[0] === true);
   return isAuthenticated;
 }

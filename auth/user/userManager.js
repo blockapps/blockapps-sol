@@ -1,30 +1,35 @@
-const ba = require('blockapps-rest');
-const util = ba.common.util;
-const BigNumber = ba.common.BigNumber;
-const config = ba.common.config;
-const rest = ba[`rest${config.restVersion ? config.restVersion : ''}`];
-const cwd = ba.common.cwd;
+const { rest, util, importer } = require('blockapps-rest');
+const { getYamlFile } = require('../../util/config');
+const { createContract, getState, call } = rest;
+const config = getYamlFile('config.yaml');
 
 const contractName = 'UserManager';
-const contractFilename = `${cwd}/${config.libPath}/auth/user/contracts/UserManager.sol`;
+const contractFilename = `${util.cwd}/${config.libPath}/auth/user/contracts/UserManager.sol`;
 
-const RestStatus = rest.getFields(`${config.libPath}/rest/contracts/RestStatus.sol`);
-const UserRole = rest.getEnums(`${config.libPath}/auth/user/contracts/UserRole.sol`).UserRole;
-const userJs = require(`${cwd}/${config.libPath}/auth/user/user`);
+const logger = console;
+
+// TODO: (remove if not in use) const RestStatus = rest.getFields(`${config.libPath}/rest/contracts/RestStatus.sol`);
+const userJs = require(`${util.cwd}/${config.libPath}/auth/user/user`);
 
 function* uploadContract(admin) {
   // NOTE: in production, the contract is created and owned by the AdminInterface
   // for testing purposes the creator is the admin user
-  const args = { _owner: admin.address };
-  const contract = yield rest.uploadContract(admin, contractName, contractFilename, args);
-  yield compileSearch(contract);
+  const args = { owner: admin.address };
+  const contractArgs = {
+    name: contractName,
+    source: yield importer.combine(contractFilename),
+    args: util.usc(args)
+  }
+  const contract = yield createContract(admin, contractArgs, { config, logger });
+  // TODO: Please confirm that it is needed
+  // yield compileSearch(contract);
   contract.src = 'removed';
   return bind(admin, contract);
 }
 
 function bind(admin, contract) {
   contract.getState = function* () {
-    return yield rest.getState(contract);
+    return yield getState(contract, { config });
   }
   contract.createUser = function* (args) {
     return yield createUser(admin, contract, args);
@@ -44,8 +49,8 @@ function bind(admin, contract) {
   return contract;
 }
 
+// TODO: remove if not in use
 function* compileSearch(contract) {
-  rest.verbose('compileSearch', contractName);
   if (yield rest.isSearchable(contract.codeHash)) {
     return;
   }
@@ -58,14 +63,17 @@ function* compileSearch(contract) {
 // throws: RestStatus
 // returns: user record from search
 function* createUser(admin, contract, args) {
-  rest.verbose('createUser', args);
-
   // function createUser(address account, string username, bytes32 pwHash, uint role) returns (ErrorCodes) {
-  const method = 'createUser';
+  const callArgs = {
+    contract,
+    method: 'createUser',
+    args: util.usc(args)
+  }
 
   // create the user, with the eth account
-  const [restStatus, address] = yield rest.callMethod(admin, contract, method, util.usc(args));
-  if (restStatus != RestStatus.CREATED) {
+  const [restStatus] = yield call(admin, callArgs, { config });
+  // TODO:  add RestStatus api call. No magic numbers
+  if (restStatus != '201') {
     throw new rest.RestError(restStatus, method, args);
   }
   // block until the user shows up in search
@@ -74,48 +82,56 @@ function* createUser(admin, contract, args) {
 }
 
 function* exists(admin, contract, username) {
-  rest.verbose('exists', username);
   // function exists(string username) returns (bool) {
-  const method = 'exists';
+  const callArgs = {
+    contract,
+    method: 'exists',
+    args: util.usc(args)
+  }
+
   const args = {
     username: username,
   };
-  const result = yield rest.callMethod(admin, contract, method, util.usc(args));
+  const result = yield call(admin, callArgs, { config });
   const exist = (result[0] === true);
   return exist;
 }
 
 function* getUser(admin, contract, username) {
-  rest.verbose('getUser', username);
   // function getUser(string username) returns (address) {
-  const method = 'getUser';
   const args = {
     username: username,
   };
+  const callArgs = {
+    contract,
+    method: 'getUser',
+    args: util.usc(args)
+  }
 
   // get the use address
-  const [address] = yield rest.callMethod(admin, contract, method, util.usc(args));
+  const [address] = yield call(admin, callArgs, { config });
   if (address == 0) {
-    throw new rest.RestError(RestStatus.NOT_FOUND, method, args);
+    throw new rest.RestError('404', method, args);
   }
   // found - query for the full user record
-  return yield userJs.getUserByAddress(address);
+  return yield userJs.getUserByAddress(contract, address);
 }
 
 function* getUsers(admin, contract) {
-  rest.verbose('getUsers');
-  const {users: usersHashmap} = yield rest.getState(contract);
-  const {values} = yield rest.getState({name: 'Hashmap', address:usersHashmap});
+  const { users: usersHashmap } = yield rest.getState(contract, { config });
+  const { values } = yield getState({ name: 'Hashmap', address: usersHashmap }, { config });
   const addresses = values.slice(1);
   return yield userJs.getUsers(addresses);
 }
 
 function* authenticate(admin, contract, args) {
-  rest.verbose('authenticate', args);
-
   // function authenticate(string _username, bytes32 _pwHash) returns (bool) {
-  const method = 'authenticate';
-  const [result] = yield rest.callMethod(admin, contract, method, util.usc(args));
+  const callArgs = {
+    contract,
+    method: 'authenticate',
+    args: util.usc(args)
+  }
+  const [result] = yield call(admin, callArgs, { config });
   const isOK = (result == true);
   return isOK;
 }

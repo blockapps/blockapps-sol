@@ -1,6 +1,3 @@
-const ba = require('blockapps-rest');
-const util = ba.common.util;
-
 const createUserArgs = function(accountAddress, uid, role=1) {
   const username = `User_${uid}`
 

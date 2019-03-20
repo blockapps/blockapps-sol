@@ -20,10 +20,11 @@ describe('PermissionManager tests', function () {
 
   // get ready:  admin-user and manager-contract
   before(function* () {
-    // parse Enums
+    // Parse fields
     const restStatusSource = fsUtil.get(`${util.cwd}/rest/contracts/RestStatus.sol`)
     RestStatus = yield parser.parseFields(restStatusSource);
-
+    
+    // parse Enums
     const source = fsUtil.get(`${util.cwd}/auth/permission/contracts/EventLogType.sol`)
     EventLogType = yield parser.parseEnum(source);
 
