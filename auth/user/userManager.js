@@ -1,6 +1,7 @@
-const { rest, util, importer } = require('blockapps-rest');
-const { getYamlFile } = require('../../util/config');
+import { rest, util, importer } from 'blockapps-rest';
 const { createContract, getState, call } = rest;
+
+import { getYamlFile } from '../../util/config';
 const config = getYamlFile('config.yaml');
 
 const contractName = 'UserManager';
@@ -11,58 +12,58 @@ const logger = console;
 // TODO: (remove if not in use) const RestStatus = rest.getFields(`${config.libPath}/rest/contracts/RestStatus.sol`);
 const userJs = require(`${util.cwd}/${config.libPath}/auth/user/user`);
 
-function* uploadContract(admin) {
+async function uploadContract(admin) {
   // NOTE: in production, the contract is created and owned by the AdminInterface
   // for testing purposes the creator is the admin user
   const args = { owner: admin.address };
   const contractArgs = {
     name: contractName,
-    source: yield importer.combine(contractFilename),
+    source: await importer.combine(contractFilename),
     args: util.usc(args)
   }
-  const contract = yield createContract(admin, contractArgs, { config, logger });
+  const contract = await createContract(admin, contractArgs, { config, logger });
   // TODO: Please confirm that it is needed
-  // yield compileSearch(contract);
+  // await compileSearch(contract);
   contract.src = 'removed';
   return bind(admin, contract);
 }
 
 function bind(admin, contract) {
-  contract.getState = function* () {
-    return yield getState(contract, { config });
+  contract.getState = async function () {
+    return await getState(contract, { config });
   }
-  contract.createUser = function* (args) {
-    return yield createUser(admin, contract, args);
+  contract.createUser = async function (args) {
+    return await createUser(admin, contract, args);
   }
-  contract.exists = function* (username) {
-    return yield exists(admin, contract, username);
+  contract.exists = async function (username) {
+    return await exists(admin, contract, username);
   }
-  contract.getUser = function* (username) {
-    return yield getUser(admin, contract, username);
+  contract.getUser = async function (username) {
+    return await getUser(admin, contract, username);
   }
-  contract.getUsers = function* () {
-    return yield getUsers(admin, contract);
+  contract.getUsers = async function () {
+    return await getUsers(admin, contract);
   }
-  contract.authenticate = function* (args) {
-    return yield authenticate(admin, contract, args);
+  contract.authenticate = async function (args) {
+    return await authenticate(admin, contract, args);
   }
   return contract;
 }
 
 // TODO: remove if not in use
-function* compileSearch(contract) {
-  if (yield rest.isSearchable(contract.codeHash)) {
+async function compileSearch(contract) {
+  if (await rest.isSearchable(contract.codeHash)) {
     return;
   }
   // compile + dependencies
   const searchable = [userJs.contractName, contractName];
-  yield rest.compileSearch(searchable, contractName, contractFilename);
+  await rest.compileSearch(searchable, contractName, contractFilename);
 
 }
 
 // throws: RestStatus
 // returns: user record from search
-function* createUser(admin, contract, args) {
+async function createUser(admin, contract, args) {
   // function createUser(address account, string username, bytes32 pwHash, uint role) returns (ErrorCodes) {
   const callArgs = {
     contract,
@@ -71,17 +72,17 @@ function* createUser(admin, contract, args) {
   }
 
   // create the user, with the eth account
-  const [restStatus] = yield call(admin, callArgs, { config });
+  const [restStatus] = await call(admin, callArgs, { config });
   // TODO:  add RestStatus api call. No magic numbers
   if (restStatus != '201') {
     throw new rest.RestError(restStatus, method, args);
   }
   // block until the user shows up in search
-  const user = yield getUser(admin, contract, args.username);
+  const user = await getUser(admin, contract, args.username);
   return user;
 }
 
-function* exists(admin, contract, username) {
+async function exists(admin, contract, username) {
   // function exists(string username) returns (bool) {
   const callArgs = {
     contract,
@@ -92,12 +93,12 @@ function* exists(admin, contract, username) {
   const args = {
     username: username,
   };
-  const result = yield call(admin, callArgs, { config });
+  const result = await call(admin, callArgs, { config });
   const exist = (result[0] === true);
   return exist;
 }
 
-function* getUser(admin, contract, username) {
+async function getUser(admin, contract, username) {
   // function getUser(string username) returns (address) {
   const args = {
     username: username,
@@ -109,36 +110,36 @@ function* getUser(admin, contract, username) {
   }
 
   // get the use address
-  const [address] = yield call(admin, callArgs, { config });
+  const [address] = await call(admin, callArgs, { config });
   if (address == 0) {
     throw new rest.RestError('404', method, args);
   }
   // found - query for the full user record
-  return yield userJs.getUserByAddress(contract, address);
+  return await userJs.getUserByAddress(contract, address);
 }
 
-function* getUsers(admin, contract) {
-  const { users: usersHashmap } = yield rest.getState(contract, { config });
-  const { values } = yield getState({ name: 'Hashmap', address: usersHashmap }, { config });
+async function getUsers(admin, contract) {
+  const { users: usersHashmap } = await rest.getState(contract, { config });
+  const { values } = await getState({ name: 'Hashmap', address: usersHashmap }, { config });
   const addresses = values.slice(1);
-  return yield userJs.getUsers(addresses);
+  return await userJs.getUsers(addresses);
 }
 
-function* authenticate(admin, contract, args) {
+async function authenticate(admin, contract, args) {
   // function authenticate(string _username, bytes32 _pwHash) returns (bool) {
   const callArgs = {
     contract,
     method: 'authenticate',
     args: util.usc(args)
   }
-  const [result] = yield call(admin, callArgs, { config });
+  const [result] = await call(admin, callArgs, { config });
   const isOK = (result == true);
   return isOK;
 }
 
-module.exports = {
-  uploadContract: uploadContract,
-  compileSearch: compileSearch,
-  contractName: contractName,
-  bind: bind,
+export {
+  uploadContract,
+  compileSearch,
+  contractName,
+  bind
 };
