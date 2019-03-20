@@ -27,7 +27,7 @@
     "@babel/node": "^7.2.2",
     "@babel/preset-env": "^7.3.4",
     "@babel/register": "^7.0.0",
-    "blockapps-rest": "^7.0.1",
+    "blockapps-rest": "git://github.com/blockapps/blockapps-rest#barf-develop",
     "chai": "^4.0.2",
     "co": "^4.6.0",
     "co-mocha": "^1.2.0",

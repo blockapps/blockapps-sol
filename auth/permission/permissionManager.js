@@ -1,16 +1,15 @@
-const ba = require('blockapps-rest');
-const { utils, importer } = ba;
+const { rest, util, importer } = require('blockapps-rest');
 const { getYamlFile } = require('../../util/config');
-const { createContract, getState, call } = ba.default;
+const { createContract, getState, call, RestError } = rest;
 const config = getYamlFile('config.yaml');
-const logger = console
+// const logger = console
 
 const contractName = 'PermissionManager';
 const contractFilename = `./auth/permission/contracts/PermissionManager.sol`;
 // TODO: do some research on getFields
 // const RestStatus = rest.getFields(`./rest/contracts/RestStatus.sol`);
 
-utils.bitmaskToEnumString = function (bitmask, bitmaskEnum) {
+util.bitmaskToEnumString = function (bitmask, bitmaskEnum) {
   const strings = []
   for (let i = 0; i < bitmaskEnum.MAX; i++) {
     const mask = (1 << i)
@@ -34,7 +33,7 @@ function* uploadContract(admin, master) {
     }
   }
 
-  const contract = yield createContract(admin, contractArgs, { config, logger })
+  const contract = yield createContract(admin, contractArgs, { config })
   contract.src = 'removed';
   return bind(admin, contract);
 }
@@ -90,7 +89,7 @@ function* grant(admin, contract, args) {
   const callArgs = {
     contract,
     method: 'grant',
-    args: utils.usc(args)
+    args: util.usc(args)
   }
 
   const [restStatus, permissions] = yield call(admin, callArgs, { config });
@@ -107,12 +106,12 @@ function* getPermissions(admin, contract, args) {
   const callArgs = {
     contract,
     method: 'getPermissions',
-    args: utils.usc(args)
+    args: util.usc(args)
   }
 
   const [restStatus, permissions] = yield call(admin, callArgs, { config });
   if (restStatus != '200') {
-    throw new utils.RestError(restStatus, callArgs.method, callArgs.args);
+    throw new RestError(restStatus, callArgs.method, callArgs.args);
   }
   return permissions;
 }
@@ -124,7 +123,7 @@ function* check(admin, contract, args) {
   const callArgs = {
     contract,
     method: 'check',
-    args: utils.usc(args)
+    args: util.usc(args)
   }
 
   const [restStatus] = yield call(admin, callArgs, { config });
@@ -140,12 +139,12 @@ function* revoke(admin, contract, args) {
   const callArgs = {
     contract,
     method: 'revoke',
-    args: utils.usc(args)
+    args: util.usc(args)
   }
 
   const [restStatus] = yield call(admin, callArgs, { config });
   if (restStatus != '200') {
-    throw new utils.RestError(restStatus, callArgs.method, callArgs.args);
+    throw new RestError(restStatus, callArgs.method, callArgs.args);
   }
   return '200';
 }
@@ -155,7 +154,7 @@ function* transferOwnership(admin, contract, args) {
   const callArgs = {
     contract,
     method: 'transferOwnership',
-    args: utils.usc(args)
+    args: util.usc(args)
   }
   
   const [restStatus] = yield call(admin, callArgs, {});
@@ -170,7 +169,7 @@ function* listPermits(admin, contract, args) {
   const { permits } = yield contract.getState()
   const permitsJson = permits.map((permit) => {
     permit.permissionsHex = Number(permit.permissions).toString(16)
-    permit.strings = utils.bitmaskToEnumString(permit.permissions, args.enum)
+    permit.strings = util.bitmaskToEnumString(permit.permissions, args.enum)
     return permit
   })
   return permitsJson
@@ -180,7 +179,7 @@ function* listEvents(admin, contract, args) {
   const { eventLog } = yield contract.getState()
   const eventsJson = eventLog.map((event) => {
     event.permissionsHex = Number(event.permissions).toString(16)
-    event.strings = utils.bitmaskToEnumString(event.permissions, args.enum)
+    event.strings = util.bitmaskToEnumString(event.permissions, args.enum)
     return event
   })
   return eventsJson
