@@ -10,7 +10,7 @@ const contractFilename = `${util.cwd}/${config.libPath}/auth/user/contracts/User
 const options = { config };
 
 // TODO: (remove if not in use) const RestStatus = rest.getFields(`${config.libPath}/rest/contracts/RestStatus.sol`);
-const userJs = require(`${util.cwd}/${config.libPath}/auth/user/user`);
+import * as userJs from './user';
 
 async function uploadContract(admin) {
   // NOTE: in production, the contract is created and owned by the AdminInterface
