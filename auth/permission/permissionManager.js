@@ -6,6 +6,7 @@ const config = getYamlFile('config.yaml');
 
 const contractName = 'PermissionManager';
 const contractFilename = `./auth/permission/contracts/PermissionManager.sol`;
+const options = { config }
 
 util.bitmaskToEnumString = function (bitmask, bitmaskEnum) {
   const strings = []
@@ -29,7 +30,7 @@ async function uploadContract(admin, master) {
     args: util.usc(args)
   }
 
-  const contract = await createContract(admin, contractArgs, { config })
+  const contract = await createContract(admin, contractArgs, options)
   contract.src = 'removed';
   return bind(admin, contract);
 }
@@ -44,7 +45,7 @@ async function createPermissionsAdmin(admin, master, permissions) {
 
 function bind(admin, contract) {
   contract.getState = async function () {
-    return await getState(contract, { config });
+    return await getState(contract, options);
   }
   contract.grant = async function (args) {
     return await grant(admin, contract, args);
@@ -88,7 +89,7 @@ async function grant(admin, contract, args) {
     args: util.usc(args)
   }
 
-  const [restStatus, permissions] = await call(admin, callArgs, { config });
+  const [restStatus, permissions] = await call(admin, callArgs, options);
   if (restStatus != '200') {
     throw new Error(restStatus);
   }
@@ -105,7 +106,7 @@ async function getPermissions(admin, contract, args) {
     args: util.usc(args)
   }
 
-  const [restStatus, permissions] = await call(admin, callArgs, { config });
+  const [restStatus, permissions] = await call(admin, callArgs, options);
   if (restStatus != '200') {
     throw new RestError(restStatus, callArgs.method, callArgs.args);
   }
@@ -122,7 +123,7 @@ async function check(admin, contract, args) {
     args: util.usc(args)
   }
 
-  const [restStatus] = await call(admin, callArgs, { config });
+  const [restStatus] = await call(admin, callArgs, options);
   if (restStatus != '200') {
     return false;
   }
@@ -138,7 +139,7 @@ async function revoke(admin, contract, args) {
     args: util.usc(args)
   }
 
-  const [restStatus] = await call(admin, callArgs, { config });
+  const [restStatus] = await call(admin, callArgs, options);
   // TODO: reststatus
   if (restStatus != '200') {
     throw new RestError(restStatus, callArgs.method, callArgs.args);

@@ -4,16 +4,17 @@ const { createUser, call } = rest;
 
 import { getYamlFile } from '../../../util/config';
 import * as permissionManagerJs from '../permissionManager';
+import { getCredentialArgs } from '../../../util/util';
 
 const config = getYamlFile('config.yaml');
 
-const adminName = util.uid('Admin')
-const adminPassword = '1234'
-const masterName = util.uid('Master')
-const masterPassword = '5678'
+const adminArgs = getCredentialArgs(util.uid(), 'Admin', '1234');
+const masterArgs = getCredentialArgs(util.uid(), 'Master', '5678');
 
 describe('PermissionManager tests', function () {
   this.timeout(config.timeout);
+  
+  const options = { config }
 
   let admin, master, EventLogType, RestStatus;
 
@@ -28,9 +29,9 @@ describe('PermissionManager tests', function () {
     EventLogType = await parser.parseEnum(source);
 
     console.log('creating admin')
-    admin = await createUser({ username: adminName, password: adminPassword }, { config })
+    admin = await createUser(adminArgs, options)
     console.log('creating master')
-    master = await createUser({ username: masterName, password: masterPassword }, { config })
+    master = await createUser(masterArgs, options)
   })
 
   it('upload', async function () {
@@ -184,7 +185,7 @@ describe('PermissionManager tests', function () {
 
   it('Transfer Ownership - AUTHORIZED', async function () {
     const uid = util.uid()
-    const newOwner = await createUser({ username: `NewOwner_${uid}`, password: '1234' }, { config })
+    const newOwner = await createUser({ username: `NewOwner_${uid}`, password: '1234' }, options)
     const contract = await permissionManagerJs.uploadContract(admin, master)
     // transfer ownership to a new admin, by the master
     {
@@ -194,14 +195,14 @@ describe('PermissionManager tests', function () {
         args: util.usc({ newOwner: newOwner.address })
       }
 
-      const [restStatus] = await call(master, callArgs, { config })
+      const [restStatus] = await call(master, callArgs, options)
       assert.equal(restStatus, RestStatus.OK, 'should succeed')
     }
   })
 
   it('Transfer Ownership - positive case', async function () {
     const uid = util.uid()
-    const newOwner = await createUser({ username: `NewOwner_${uid}`, password: '1234' }, { config })
+    const newOwner = await createUser({ username: `NewOwner_${uid}`, password: '1234' }, options)
     const contract = await permissionManagerJs.uploadContract(admin, master)
     // admin works
     const args = await createPermitArgs(uid)
@@ -213,7 +214,7 @@ describe('PermissionManager tests', function () {
         method: 'grant',
         args: util.usc(args)
       }
-      const [restStatus, permissions] = await call(newOwner, callArgs, { config })
+      const [restStatus, permissions] = await call(newOwner, callArgs, options)
       assert.equal(restStatus, RestStatus.UNAUTHORIZED, 'should fail')
     }
     // transfer ownership - must be master
@@ -225,7 +226,7 @@ describe('PermissionManager tests', function () {
         args: util.usc(args)
       }
 
-      const [restStatus] = await call(master, callArgs, { config })
+      const [restStatus] = await call(master, callArgs, options)
       assert.equal(restStatus, RestStatus.OK, 'should succeed')
     }
     // old admin unauthorized
@@ -236,7 +237,7 @@ describe('PermissionManager tests', function () {
         args: util.usc(args)
       }
 
-      const [restStatus] = await call(admin, callArgs, { config })
+      const [restStatus] = await call(admin, callArgs, options)
       assert.equal(restStatus, RestStatus.UNAUTHORIZED, 'should fail')
     }
     // new admin works
@@ -247,7 +248,7 @@ describe('PermissionManager tests', function () {
         args: util.usc(args)
       }
 
-      const [restStatus] = await call(newOwner, callArgs, { config })
+      const [restStatus] = await call(newOwner, callArgs, options)
       assert.equal(restStatus, RestStatus.OK, 'should succeed')
     }
   })
@@ -257,7 +258,7 @@ describe('PermissionManager tests', function () {
     const contract = await permissionManagerJs.uploadContract(admin, master)
     // transfer ownership to attacker
     {
-      const attacker = await createUser({ username: `Attacker_${uid}`, password: '1234' }, { config })
+      const attacker = await createUser({ username: `Attacker_${uid}`, password: '1234' }, options)
       const args = { newOwner: attacker.address }
 
       const callArgs = {
@@ -266,7 +267,7 @@ describe('PermissionManager tests', function () {
         args: util.usc(args)
       }
 
-      const [restStatus] = await call(attacker, callArgs, { config })
+      const [restStatus] = await call(attacker, callArgs, options)
       assert.equal(restStatus, RestStatus.UNAUTHORIZED, 'should fail')
     }
   })
@@ -351,7 +352,7 @@ describe('PermissionManager tests', function () {
 async function createPermitArgs(uid) {
   const userArgs = {
     username: `username_${uid}`,
-    password: adminPassword
+    password: '1234'
   };
 
   const user = await createUser(userArgs, { config })

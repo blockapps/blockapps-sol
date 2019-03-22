@@ -4,30 +4,28 @@ const { createUser, call, createContract } = rest;
 
 import { getYamlFile } from '../../../util/config';
 import * as permissionedHashmapJs from '../permissionedHashmap';
-
+import { getCredentialArgs } from '../../../util/util';
 
 const config = getYamlFile('config.yaml');
 
-const adminName = util.uid('Admin')
-const adminPassword = '1234'
-const masterName = util.uid('Master')
-const masterPassword = '5678'
-const attackerName = util.uid('Attacker')
-const attackerPassword = '9090'
+const adminArgs = getCredentialArgs(util.uid(), 'Admin', '1234');
+const masterArgs = getCredentialArgs(util.uid(), 'Master', '5678');
+const attackerArgs = getCredentialArgs(util.uid(), 'Attacker', '9090');
 
 describe('PermissionedHashmap tests', function () {
   this.timeout(config.timeout)
 
+  const options = { config }
   let admin, master, attacker, hashmapPermissionManager
 
   // get ready:  admin-user and manager-contract
   before(async function () {
     console.log('creating admin')
-    admin = await createUser({ username: adminName, password: adminPassword }, { config })
+    admin = await createUser(adminArgs, options)
     console.log('creating master')
-    master = await createUser({ username: masterName, password: masterPassword }, { config })
+    master = await createUser(masterArgs, options)
     console.log('creating attacker')
-    attacker = await createUser({ username: attackerName, password: attackerPassword }, { config })
+    attacker = await createUser(attackerArgs, options)
     // pm
     hashmapPermissionManager = await createHashmapPermissionManager(admin, master)
   })
@@ -53,7 +51,7 @@ describe('PermissionedHashmap tests', function () {
       args: util.usc(args)
     }
 
-    const result = await call(attacker, callArgs, { config })
+    const result = await call(attacker, callArgs, options)
 
     const state = await contract.getState();
     assert.equal(state.values.length, 1, 'length 1 - did not put');
@@ -139,7 +137,7 @@ describe('PermissionedHashmap tests', function () {
       method: 'remove',
       args: util.usc(args)
     }
-    const result = await call(attacker, callArgs, { config })
+    const result = await call(attacker, callArgs, options)
 
     await contract.getState()
     // still contained - was not removed

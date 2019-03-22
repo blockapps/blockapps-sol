@@ -6,6 +6,7 @@ const config = getYamlFile('config.yaml');
 
 const contractName = 'PermissionedHashmap'
 const contractFilename = `${config.libPath}/auth/permission/contracts/PermissionedHashmap.sol`
+const options = { config }
 
 async function uploadContract(admin, permissionManager) {
   const args = { permissionManager: permissionManager.address }
@@ -16,7 +17,7 @@ async function uploadContract(admin, permissionManager) {
     args: util.usc(args)
   }
 
-  const contract = await createContract(admin, contractArgs, { config })
+  const contract = await createContract(admin, contractArgs, options)
   contract.src = 'removed'
   return bind(admin, contract)
 }
@@ -24,7 +25,7 @@ async function uploadContract(admin, permissionManager) {
 function bind(admin, _contract) {
   const contract = _contract
   contract.getState = async function () {
-    return await getState(contract, { config })
+    return await getState(contract, options)
   }
   // TODO: it is not in new rest (do we have the same with diffrent name ?)
   // contract.getStateVar = async function(args) {
@@ -64,7 +65,7 @@ async function put(admin, contract, args) {
     args: util.usc(args)
   }
 
-  const result = await call(admin, callArgs, { config })
+  const result = await call(admin, callArgs, options)
   return result
 }
 
@@ -75,7 +76,7 @@ async function get(admin, contract, args) {
     args: util.usc(args)
   }
 
-  const result = await call(admin, callArgs, { config })
+  const result = await call(admin, callArgs, options)
   return result[0]
 }
 
@@ -86,7 +87,7 @@ async function contains(admin, contract, args) {
     args: util.usc(args)
   }
 
-  const result = await call(admin, callArgs, { config })
+  const result = await call(admin, callArgs, options)
   return result[0] == true
 }
 
@@ -96,7 +97,7 @@ async function size(admin, contract, args) {
     method: 'size',
     args: util.usc(args)
   }
-  const result = await call(admin, callArgs, { config })
+  const result = await call(admin, callArgs, options)
   return parseInt(result[0], 10)
 }
 
@@ -107,7 +108,7 @@ async function remove(admin, contract, args) {
     args: util.usc(args)
   }
 
-  await call(admin, callArgs, { config })
+  await call(admin, callArgs, options)
 }
 
 export {
