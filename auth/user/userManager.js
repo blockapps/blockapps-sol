@@ -1,5 +1,5 @@
 import { rest, util, importer } from 'blockapps-rest';
-const { createContract, getState, call } = rest;
+const { createContract, getState, call, RestError } = rest;
 
 import { getYamlFile } from '../../util/config';
 const config = getYamlFile('config.yaml');
@@ -7,7 +7,7 @@ const config = getYamlFile('config.yaml');
 const contractName = 'UserManager';
 const contractFilename = `${util.cwd}/${config.libPath}/auth/user/contracts/UserManager.sol`;
 
-const logger = console;
+const options = { config };
 
 // TODO: (remove if not in use) const RestStatus = rest.getFields(`${config.libPath}/rest/contracts/RestStatus.sol`);
 const userJs = require(`${util.cwd}/${config.libPath}/auth/user/user`);
@@ -21,14 +21,14 @@ async function uploadContract(admin) {
     source: await importer.combine(contractFilename),
     args: util.usc(args)
   }
-  const contract = await createContract(admin, contractArgs, { config, logger });
+  const contract = await createContract(admin, contractArgs, options);
   contract.src = 'removed';
   return bind(admin, contract);
 }
 
 function bind(admin, contract) {
   contract.getState = async function () {
-    return await getState(contract, { config });
+    return await getState(contract, options);
   }
   contract.createUser = async function (args) {
     return await createUser(admin, contract, args);
@@ -59,10 +59,10 @@ async function createUser(admin, contract, args) {
   }
 
   // create the user, with the eth account
-  const [restStatus] = await call(admin, callArgs, { config });
+  const [restStatus] = await call(admin, callArgs, options);
   // TODO:  add RestStatus api call. No magic numbers
   if (restStatus != '201') {
-    throw new rest.RestError(restStatus, method, args);
+    throw new RestError(restStatus, callArgs.method, callArgs.args);
   }
   // block until the user shows up in search
   const user = await getUser(admin, contract, args.username);
@@ -71,16 +71,17 @@ async function createUser(admin, contract, args) {
 
 async function exists(admin, contract, username) {
   // function exists(string username) returns (bool) {
+  const args = {
+    username: username,
+  };
+
   const callArgs = {
     contract,
     method: 'exists',
     args: util.usc(args)
   }
 
-  const args = {
-    username: username,
-  };
-  const result = await call(admin, callArgs, { config });
+  const result = await call(admin, callArgs, options);
   const exist = (result[0] === true);
   return exist;
 }
@@ -90,6 +91,7 @@ async function getUser(admin, contract, username) {
   const args = {
     username: username,
   };
+
   const callArgs = {
     contract,
     method: 'getUser',
@@ -97,17 +99,17 @@ async function getUser(admin, contract, username) {
   }
 
   // get the use address
-  const [address] = await call(admin, callArgs, { config });
+  const [address] = await call(admin, callArgs, options);
   if (address == 0) {
-    throw new rest.RestError('404', method, args);
+    throw new RestError('404', callArgs.method, args);
   }
   // found - query for the full user record
   return await userJs.getUserByAddress(address);
 }
 
 async function getUsers(admin, contract) {
-  const { users: usersHashmap } = await rest.getState(contract, { config });
-  const { values } = await getState({ name: 'Hashmap', address: usersHashmap }, { config });
+  const { users: usersHashmap } = await rest.getState(contract, options);
+  const { values } = await getState({ name: 'Hashmap', address: usersHashmap }, options);
   const addresses = values.slice(1);
   return await userJs.getUsers(addresses);
 }
@@ -119,7 +121,7 @@ async function authenticate(admin, contract, args) {
     method: 'authenticate',
     args: util.usc(args)
   }
-  const [result] = await call(admin, callArgs, { config });
+  const [result] = await call(admin, callArgs, options);
   const isOK = (result == true);
   return isOK;
 }

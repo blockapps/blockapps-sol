@@ -4,8 +4,7 @@ const { createContract, getState, call, searchUntil } = rest;
 import { getYamlFile } from '../../util/config';
 const config = getYamlFile('config.yaml');
 
-const logger = console
-const options = { config, logger }
+const options = { config };
 
 const contractName = 'User';
 const contractFilename = `${util.cwd}/${config.libPath}/auth/user/contracts/User.sol`;
@@ -17,14 +16,14 @@ async function uploadContract(admin, args) {
     args: util.usc(args)
   }
 
-  const contract = await createContract(admin, contractArgs, { config });
+  const contract = await createContract(admin, contractArgs, options);
   contract.src = 'removed';
   return bind(admin, contract);
 }
 
 function bind(admin, contract) {
   contract.getState = async function () {
-    return await getState(contract, { config });
+    return await getState(contract, options);
   }
   contract.authenticate = async function (pwHash) {
     return await authenticate(admin, contract, pwHash);
@@ -34,24 +33,45 @@ function bind(admin, contract) {
 
 async function getUsers(addresses) { // FIXME must break to batches of 50 addresses
   const csv = util.toCsv(addresses); // generate csv string
-  const results = await rest.query(`${contractName}?address=in.${csv}`);
+
+  function predicate(response) {
+    return response;
+  }
+
+  const contract = {
+    name: contractName
+  }
+  const results = await searchUntil(contract, predicate, { config, query: { address: `in.${csv}` } });
   return results;
 }
 
 async function getUser(username) {
-  return (await rest.waitQuery(`${contractName}?username=eq.${username}`, 1))[0];
+  function predicate(response) {
+    if (response.length >= 1) {
+      return response;
+    }
+  }
+
+  const contract = {
+    name: contractName
+  }
+
+  const response = (await searchUntil(contract, predicate, { config, query: { username: `eq.${username}` } }))[0];
+  return response;
 }
 
 async function getUserByAddress(address) {
-  // TODO:
-  // RESUME: after fixing work from rest side. Please continue from here
-  function predicate(r) {  console.log("running -----------", r); r.length >= 1}
+  function predicate(response) {
+    if (response.length >= 1) {
+      return response;
+    }
+  }
 
-  const contract = { name: contractName, address }
-  const response = await searchUntil(contract, predicate, { config, logger, isAsync: true, query: { address: `eq.${address}`} })
-  console.log("-------------------------------", response)
-  return response
-  // return (await rest.waitQuery(`${contractName}?address=eq.${address}`, 1))[0];
+  const contract = {
+    name: contractName, address
+  }
+  const response = (await searchUntil(contract, predicate, { config, query: { address: `eq.${address}` } }))[0];
+  return response;
 }
 
 async function authenticate(admin, contract, pwHash) {
@@ -64,7 +84,7 @@ async function authenticate(admin, contract, pwHash) {
     method: 'authenticate',
     args: util.usc(args)
   }
-  const result = await call(admin, callArgs, { config });
+  const result = await call(admin, callArgs, options);
   const isAuthenticated = (result[0] === true);
   return isAuthenticated;
 }

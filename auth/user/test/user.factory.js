@@ -1,4 +1,4 @@
-const createUserArgs = function(accountAddress, uid, role=1) {
+const createUserArgs = function (accountAddress, uid, role = 1) {
   const username = `User_${uid}`
 
   // function User(address _account, string _username, uint _role)

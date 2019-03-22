@@ -5,16 +5,17 @@ const { createUser, call } = rest;
 import { getYamlFile } from '../../../util/config';
 const config = getYamlFile('config.yaml');
 
-import * as userManagerJs from '../userManager';
-import * as factory from './user.factory';
+import { uploadContract } from '../userManager';
+import { createUserArgs } from './user.factory';
+import { getCredentialArgs } from '../../../util/util';
 
-const adminName = util.uid('Admin');
-const adminPassword = '1234';
-const blocName = util.uid('Bloc');
-const blocPassword = '4567';
+const adminArgs = getCredentialArgs(util.uid(), 'Admin', '1234');
+const blocArgs = getCredentialArgs(util.uid(), 'Bloc', '4567');
 
 describe('UserManager tests', function () {
   this.timeout(config.timeout);
+
+  const options = { config }
 
   let admin;
   let contract;
@@ -27,45 +28,54 @@ describe('UserManager tests', function () {
     const restStatusSource = fsUtil.get(`${util.cwd}/rest/contracts/RestStatus.sol`)
     RestStatus = await parser.parseFields(restStatusSource);
 
-    admin = await createUser({ username: adminName, password: adminPassword }, { config });
-    contract = await userManagerJs.uploadContract(admin);
+    admin = await createUser(adminArgs, options);
+    contract = await uploadContract(admin);
     // bloc account must be created separately
-    account = await createUser({ username: blocName, password: blocPassword }, { config });
+    account = await createUser(blocArgs, options);
   });
 
   it('Create User', async function () {
     const uid = util.uid();
     // create user with the bloc account
-    const args = factory.createUserArgs(account.address, uid);
+    const args = createUserArgs(account.address, uid);
     const user = await contract.createUser(args);
     assert.equal(user.account, args.account, 'account');
     assert.equal(user.username, args.username, 'username');
     assert.equal(user.role, args.role, 'role');
   });
 
-  xit('Create User - UNAUTHORIZED', async function () {
+  it('Create User - UNAUTHORIZED', async function () {
     const uid = util.uid();
-    const args = factory.createUserArgs(account.address, uid);
-    const attacker = await rest.createUser('Attacker_' + uid, '' + uid);
+    const args = createUserArgs(account.address, uid);
+    const attackerArgs = getCredentialArgs(uid, 'Attacker', '1234');
+    const attacker = await rest.createUser(attackerArgs, options);
+
+    const callArgs = {
+      contract,
+      method: 'createUser',
+      args: util.usc(args)
+    }
 
     // create user UNAUTHORIZED
-    const method = 'createUser';
-    const [restStatus, address] = await rest.callMethod(attacker, contract, method, util.usc(args));
+    const [restStatus] = await call(attacker, callArgs, options);
     assert.equal(restStatus, RestStatus.UNAUTHORIZED, 'should fail');
   });
 
-  xit('Create User - illegal name', async function () {
+  it('Create User - illegal name', async function () {
     const uid = util.uid();
-    const args = factory.createUserArgs(account.address, uid);
+    const args = createUserArgs(account.address, uid);
     args.username = '123456789012345678901234567890123'; // 33 chars
-    await assert.shouldThrowRest(async function () {
-      return await contract.createUser(args);
-    }, RestStatus.BAD_REQUEST);
+
+    try {
+      await contract.createUser(args);
+    } catch (e) {
+      assert.equal(e.response.status, '400', 'should Throws 404 Not found')
+    }
   });
 
-  xit('Test exists()', async function () {
+  it('Test exists()', async function () {
     const uid = util.uid();
-    const args = factory.createUserArgs(account.address, uid);
+    const args = createUserArgs(account.address, uid);
 
     let exists;
     // should not exist
@@ -79,9 +89,9 @@ describe('UserManager tests', function () {
     assert.equal(exists, true, 'should exist')
   });
 
-  xit('Test exists() with special characters', async function () {
+  it('Test exists() with special characters', async function () {
     const uid = util.uid();
-    const args = factory.createUserArgs(account.address, uid);
+    const args = createUserArgs(account.address, uid);
     args.username += ' ?#%!@*';
 
     let exists;
@@ -96,25 +106,27 @@ describe('UserManager tests', function () {
     assert.equal(exists, true, 'should exist')
   });
 
-  xit('Create Duplicate User', async function () {
+  it('Create Duplicate User', async function () {
     const uid = util.uid();
-    const args = factory.createUserArgs(account.address, uid);
+    const args = createUserArgs(account.address, uid);
 
-    // create user
-    const user = await contract.createUser(args);
-    await assert.shouldThrowRest(async function () {
-      const user = await contract.createUser(args);
-    }, RestStatus.BAD_REQUEST);
+    try {
+      await contract.createUser(args);
+    } catch (e) {
+      assert.equal(e.response.status, RestStatus.BAD_REQUEST, 'should Throws 404 Not found')
+    }
   });
 
-  xit('Get User', async function () {
+  it('Get User', async function () {
     const uid = util.uid();
-    const args = factory.createUserArgs(account.address, uid);
+    const args = createUserArgs(account.address, uid);
 
     // get non-existing user
-    await assert.shouldThrowRest(async function () {
-      const user = await contract.getUser(args.username);
-    }, RestStatus.NOT_FOUND);
+    try {
+      await contract.getUser(args.username);
+    } catch (e) {
+      assert.equal(e.response.status, RestStatus.NOT_FOUND, 'should Throws 404 Not found')
+    }
     // create user
     await contract.createUser(args);
     // get user - should exist
@@ -122,9 +134,9 @@ describe('UserManager tests', function () {
     assert.equal(user.username, args.username, 'username should be found');
   });
 
-  xit('Get Users', async function () {
+  it('Get Users', async function () {
     const uid = util.uid();
-    const args = factory.createUserArgs(account.address, uid);
+    const args = createUserArgs(account.address, uid);
 
     // get users - should not exist
     {
@@ -146,10 +158,11 @@ describe('UserManager tests', function () {
     }
   });
 
+  // TODO: we can remove this as we are checking the same in userManager-load.test.js. @lior please confirm
   it.skip('User address leading zeros - load test - skipped', async function () {
     this.timeout(60 * 60 * 1000);
     const uid = util.uid();
-    const args = factory.createUserArgs(account.address, uid);
+    const args = createUserArgs(account.address, uid);
     const username = args.username;
 
     const count = 16 * 4; // leading 0 once every 16
