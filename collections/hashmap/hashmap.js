@@ -7,6 +7,8 @@ const config = getYamlFile('config.yaml');
 const contractName = 'Hashmap';
 const contractFilename = `${config.libPath}/collections/hashmap/contracts/Hashmap.sol`;
 
+const options = { config };
+
 async function uploadContract(admin) {
   const args = {};
 
@@ -16,14 +18,14 @@ async function uploadContract(admin) {
     args: util.usc(args)
   }
 
-  const contract = await createContract(admin, contractArgs, { config });
+  const contract = await createContract(admin, contractArgs, options);
   contract.src = 'removed';
   return bind(admin, contract);
 }
 
 function bind(admin, contract) {
-  contract.getState = async function() {
-    return await getState(contract, { config });
+  contract.getState = async function () {
+    return await getState(contract, options);
   }
   // TODO: Why we are using this function which is not in use
   // contract.getStateVar = function* (args) {
@@ -58,7 +60,7 @@ async function put(admin, contract, args) {
     args: util.usc(args)
   }
 
-  const result = await call(admin, callArgs, { config });
+  const result = await call(admin, callArgs, options);
   return result;
 }
 
@@ -69,7 +71,7 @@ async function get(admin, contract, args) {
     args: util.usc(args)
   }
 
-  const result = await call(admin, callArgs, { config });
+  const result = await call(admin, callArgs, options);
   return result[0];
 }
 
@@ -80,7 +82,7 @@ async function contains(admin, contract, args) {
     args: util.usc(args)
   }
 
-  const result = await call(admin, callArgs, { config });
+  const result = await call(admin, callArgs, options);
   return result[0] == true;
 }
 
@@ -91,7 +93,7 @@ async function size(admin, contract, args) {
     args: util.usc(args)
   }
 
-  const result = await call(admin, callArgs, { config });
+  const result = await call(admin, callArgs, options);
   return parseInt(result[0]);
 }
 
@@ -102,7 +104,7 @@ async function transferOwnership(admin, contract, args) {
     args: util.usc(args)
   }
 
-  const result = await call(admin, callArgs, { config });
+  const result = await call(admin, callArgs, options);
   return result[0] == true;
 }
 
@@ -113,7 +115,7 @@ async function getOwner(admin, contract, args) {
     args: util.usc(args)
   }
 
-  const result = await call(admin, callArgs, { config });
+  const result = await call(admin, callArgs, options);
   return result[0];
 }
 

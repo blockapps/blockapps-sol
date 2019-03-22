@@ -2,27 +2,26 @@ import { assert } from 'chai';
 import { rest, util } from 'blockapps-rest';
 import { getYamlFile } from '../../../util/config';
 import * as hashmapJs from '../hashmap';
+import { getCredentialArgs } from '../../../util/util';
 
 const { createUser } = rest;
 const config = getYamlFile('config.yaml');
 
-const adminName = util.uid('Admin');
-const adminPassword = '1234';
+const adminArgs = getCredentialArgs(util.uid(), 'Admin', '1234');
+const otherAdminArgs = getCredentialArgs(util.uid(), 'OtherAdmin', '5678');
 
-const otherAdminName = util.uid('OtherAdmin');
-const otherAdminPassword = '5678';
-
-describe('Hashmap', function() {
+describe('Hashmap', function () {
   this.timeout(config.timeout);
 
+  const options = { config };
   let admin;
   let otherAdmin;
 
   before(async function () {
     console.log('creating admin')
-    admin = await createUser({ username: adminName, password: adminPassword }, { config });
+    admin = await createUser(adminArgs, options);
     console.log('creating user')
-    otherAdmin = await createUser({ username: otherAdminName, password: otherAdminPassword }, { config });
+    otherAdmin = await createUser(otherAdminArgs, options);
   });
 
   it('getOwner', async function () {
@@ -132,7 +131,7 @@ describe('Hashmap', function() {
   });
 
   it('reject transferOwnership from original admin', async function () {
-    const newAdmin = await createUser({ username: util.uid('newAdmin'), password: '4321' }, { config });
+    const newAdmin = await createUser({ username: util.uid('newAdmin'), password: '4321' }, options);
     const hashmap = await hashmapJs.uploadContract(admin);
     await hashmap.transferOwnership({ newOwner: otherAdmin.address });
 

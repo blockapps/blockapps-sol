@@ -2,21 +2,22 @@ import { assert } from 'chai';
 import { rest, util } from 'blockapps-rest';
 import { getYamlFile } from '../../../util/config';
 import * as unsafeHashmapJs from '../unsafeHashmap';
+import { getCredentialArgs } from '../../../util/util';
 
 const { createUser } = rest;
 const config = getYamlFile('config.yaml');
 
-const adminName = util.uid('Admin')
-const adminPassword = '1234'
+const adminArgs = getCredentialArgs(util.uid(), 'Admin', '1234');
 
 describe('UnsafeHashmap', function () {
   this.timeout(config.timeout)
 
+  const options = { config };
   let admin
 
   before(async function () {
     console.log('creating admin')
-    admin = await createUser({ username: adminName, password: adminPassword }, { config })
+    admin = await createUser(adminArgs, options)
   })
 
   it('put', async function () {
