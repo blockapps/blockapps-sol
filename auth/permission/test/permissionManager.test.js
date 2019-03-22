@@ -99,7 +99,7 @@ describe('PermissionManager tests', function () {
     try {
       await contract.getPermissions(args)
     } catch (e) {
-      assert.equal(e.response.status, '404', 'should Throws 404 Not found')
+      assert.equal(e.response.status, RestStatus.NOT_FOUND, 'should Throws 404 Not found')
     }
   })
 
@@ -172,10 +172,7 @@ describe('PermissionManager tests', function () {
     const contract = await permissionManagerJs.uploadContract(admin, master)
 
     const args = { address: 1234 }
-    // TODO: Add shouldThrowRest in util or blockapps-rest
-    // await assert.shouldThrowRest(async function () {
-    //   await contract.revoke(args)
-    // }, RestStatus.BAD_REQUEST)
+    
     try {
       await contract.revoke(args)
     } catch (e) {

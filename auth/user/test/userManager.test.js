@@ -69,7 +69,7 @@ describe('UserManager tests', function () {
     try {
       await contract.createUser(args);
     } catch (e) {
-      assert.equal(e.response.status, '400', 'should Throws 404 Not found')
+      assert.equal(e.response.status, RestStatus.BAD_REQUEST, 'should Throws 404 Not found')
     }
   });
 

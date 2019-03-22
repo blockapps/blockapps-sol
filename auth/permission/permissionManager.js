@@ -1,3 +1,4 @@
+import RestStatus from 'http-status-codes';
 import { rest, util, importer } from 'blockapps-rest';
 const { createContract, getState, call, RestError } = rest;
 
@@ -90,7 +91,7 @@ async function grant(admin, contract, args) {
   }
 
   const [restStatus, permissions] = await call(admin, callArgs, options);
-  if (restStatus != '200') {
+  if (restStatus != RestStatus.OK) {
     throw new Error(restStatus);
   }
   return permissions;
@@ -107,7 +108,7 @@ async function getPermissions(admin, contract, args) {
   }
 
   const [restStatus, permissions] = await call(admin, callArgs, options);
-  if (restStatus != '200') {
+  if (restStatus != RestStatus.OK) {
     throw new RestError(restStatus, callArgs.method, callArgs.args);
   }
   return permissions;
@@ -124,7 +125,7 @@ async function check(admin, contract, args) {
   }
 
   const [restStatus] = await call(admin, callArgs, options);
-  if (restStatus != '200') {
+  if (restStatus != RestStatus.OK) {
     return false;
   }
   return true;
@@ -141,10 +142,10 @@ async function revoke(admin, contract, args) {
 
   const [restStatus] = await call(admin, callArgs, options);
   // TODO: reststatus
-  if (restStatus != '200') {
+  if (restStatus != RestStatus.OK) {
     throw new RestError(restStatus, callArgs.method, callArgs.args);
   }
-  return '200';
+  return RestStatus.OK;
 }
 
 // transferOwnership
@@ -156,10 +157,10 @@ async function transferOwnership(admin, contract, args) {
   }
 
   const [restStatus] = await call(admin, callArgs, {});
-  if (restStatus != '200') {
+  if (restStatus != RestStatus.OK) {
     throw new RestError(restStatus, method, args);
   }
-  return '200';
+  return RestStatus.OK;
 }
 
 // list
