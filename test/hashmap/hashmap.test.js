@@ -1,7 +1,7 @@
 import { assert } from 'chai';
 import { rest, util } from 'blockapps-rest';
 import { getYamlFile } from '../../lib/util/config';
-import * as hashmapJs from '../../lib/collections/hashmap/hashmap';
+import hashmapJs from '../../lib/collections/hashmap/hashmap';
 import { getCredentialArgs } from '../../lib/util/util';
 
 const { createUser } = rest;

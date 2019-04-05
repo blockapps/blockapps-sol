@@ -4,7 +4,7 @@ const { createUser } = rest;
 
 import { getYamlFile } from '../../lib/util/config';
 const config = getYamlFile('config.yaml');
-import { uploadContract } from '../../lib/auth/user/userManager';
+import userManagerJs from '../../lib/auth/user/userManager';
 import { createUserArgs } from './user.factory';
 import { getCredentialArgs } from '../../lib/util/util';
 
@@ -22,7 +22,7 @@ describe('UserManager LOAD tests', function () {
   // get ready:  admin-user and manager-contract
   before(async function () {
     admin = await createUser(adminArgs, options);
-    contract = await uploadContract(admin);
+    contract = await userManagerJs.uploadContract(admin);
   });
 
   it('User address leading zeros - load test - count:' + count, async function () {

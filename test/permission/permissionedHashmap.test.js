@@ -4,7 +4,7 @@ const { createUser, call, createContract } = rest;
 
 import { getYamlFile } from '../../lib/util/config';
 import { getCredentialArgs } from '../../lib/util/util';
-import * as permissionedHashmapJs from '../../lib/auth/permission/permissionedHashmap';
+import permissionedHashmapJs from '../../lib/auth/permission/permissionedHashmap';
 
 const config = getYamlFile('config.yaml');
 

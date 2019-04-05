@@ -2,7 +2,7 @@ import { assert } from 'chai';
 import { rest, util } from 'blockapps-rest';
 import { getYamlFile } from '../../lib/util/config';
 import { getCredentialArgs } from '../../lib/util/util';
-import * as unsafeHashmapJs from '../../lib/collections/hashmap/unsafeHashmap';
+import unsafeHashmapJs from '../../lib/collections/hashmap/unsafeHashmap';
 
 const { createUser } = rest;
 const config = getYamlFile('config.yaml');

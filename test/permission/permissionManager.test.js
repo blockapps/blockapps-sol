@@ -4,7 +4,7 @@ const { createUser, call } = rest;
 
 import { getYamlFile } from '../../lib/util/config';
 import { getCredentialArgs } from '../../lib/util/util';
-import * as permissionManagerJs from '../../lib/auth/permission/permissionManager';
+import permissionManagerJs from '../../lib/auth/permission/permissionManager';
 
 const config = getYamlFile('config.yaml');
 

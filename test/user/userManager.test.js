@@ -5,7 +5,7 @@ const { createUser, call } = rest;
 import { getYamlFile } from '../../lib/util/config';
 const config = getYamlFile('config.yaml');
 
-import { uploadContract } from '../../lib/auth/user/userManager';
+import userManagerJs from '../../lib/auth/user/userManager';
 import { createUserArgs } from './user.factory';
 import { getCredentialArgs } from '../../lib/util/util';
 
@@ -29,7 +29,7 @@ describe('UserManager tests', function () {
     RestStatus = await parser.parseFields(restStatusSource);
 
     admin = await createUser(adminArgs, options);
-    contract = await uploadContract(admin);
+    contract = await userManagerJs.uploadContract(admin);
     // bloc account must be created separately
     account = await createUser(blocArgs, options);
   });
