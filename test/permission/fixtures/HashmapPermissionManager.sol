@@ -1,4 +1,4 @@
-import "../../contracts/PermissionManager.sol";
+import "../../../lib/auth/permission/contracts/PermissionManager.sol";
 
 /**
 * Hashmap Permission Manager - test a permissioned hashmap

@@ -6,10 +6,10 @@
   "scripts": {
     "mocha-babel": "node_modules/.bin/mocha --require @babel/register",
     "build": "babel lib --out-dir dist --copy-files",
-    "test": "find . -type f -name '*.test.js' ! -path './node_modules/*' | xargs mocha ",
-    "test:hashmap": "yarn mocha-babel lib/collections/hashmap/test/ --config config.yaml -b",
-    "test:permission": "yarn mocha-babel lib/auth/permission/test/ --config config.yaml -b --api-debug",
-    "test:user": "yarn mocha-babel lib/auth/user/test/ --config config.yaml -b ",
+    "test": "yarn mocha-babel test/*",
+    "test:hashmap": "yarn mocha-babel test/hashmap/ --config config.yaml -b",
+    "test:permission": "yarn mocha-babel test/permission/ --config config.yaml -b --api-debug",
+    "test:user": "yarn mocha-babel test/user/ --config config.yaml -b ",
     "test:solc": "find . -name '*.sol' -print | xargs solc --allow-paths '.' 2>&1"
   },
   "repository": {

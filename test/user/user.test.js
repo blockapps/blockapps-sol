@@ -2,12 +2,12 @@ import { assert } from 'chai';
 import { rest, util } from 'blockapps-rest';
 const { createUser } = rest;
 
-import { getYamlFile } from '../../../util/config';
+import { getYamlFile } from '../../lib/util/config';
 const config = getYamlFile('config.yaml');
 
-import { uploadContract, getUser } from '../user';
+import { uploadContract, getUser } from '../../lib/auth/user/user';
 import { createUserArgs } from './user.factory';
-import { getCredentialArgs } from '../../../util/util';
+import { getCredentialArgs } from '../../lib/util/util';
 
 const adminArgs = getCredentialArgs(util.uid(), 'Admin', '1234');
 
