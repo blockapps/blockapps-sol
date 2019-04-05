@@ -1,6 +1,6 @@
 apiDebug: true
 timeout: 120000
-libPath: ./
+libPath: lib
 restVersion: 5
 
 # WARNING - extra strict syntax
