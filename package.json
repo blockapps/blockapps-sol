@@ -6,7 +6,7 @@
   "scripts": {
     "mocha-babel": "node_modules/.bin/mocha --require @babel/register",
     "build": "babel lib --out-dir dist --copy-files",
-    "test": "find . -type f -name '*.test.js' ! -path './node_modules/*' | xargs mocha ",
+    "test": "yarn test:hashmap && yarn test:permission && yarn test:user",
     "test:hashmap": "yarn mocha-babel lib/collections/hashmap/test/ --config config.yaml -b",
     "test:permission": "yarn mocha-babel lib/auth/permission/test/ --config config.yaml -b --api-debug",
     "test:user": "yarn mocha-babel lib/auth/user/test/ --config config.yaml -b ",
