@@ -1,79 +1,109 @@
-const ba = require('blockapps-rest')
 
-const { config, util } = ba.common
-const rest = ba[`rest${config.restVersion ? config.restVersion : ''}`];
+import { rest, util, importer } from 'blockapps-rest';
+const { createContract, getState, call } = rest;
+
+import { getYamlFile } from '../../util/config';
+const config = getYamlFile('config.yaml');
 
 const contractName = 'UnsafeHashmap'
 const contractFilename = `${config.libPath}/collections/hashmap/contracts/UnsafeHashmap.sol`
+const options = { config }
 
-function* uploadContract(admin) {
+async function uploadContract(admin) {
   const args = {}
-  const contract = yield rest.uploadContract(admin, contractName, contractFilename, util.usc(args))
+
+  const contractArgs = {
+    name: contractName,
+    source: await importer.combine(contractFilename),
+    args: util.usc(args)
+  }
+
+  const contract = await createContract(admin, contractArgs, options)
   contract.src = 'removed'
   return bind(admin, contract)
 }
 
 function bind(admin, _contract) {
   const contract = _contract
-  contract.getState = function* () {
-    return yield rest.getState(contract)
+  contract.getState = async function () {
+    return await getState(contract, options)
   }
-  contract.getStateVar = function* (args) {
-    return yield rest.getStateVar(contract, args.name, args.count, args.offset, args.length)
+  contract.getStateVar = async function (args) {
+    return await rest.getStateVar(contract, args.name, args.count, args.offset, args.length)
   }
-  contract.put = function* (args) {
-    return yield put(admin, contract, args)
+  contract.put = async function (args) {
+    return await put(admin, contract, args)
   }
-  contract.get = function* (args) {
-    return yield get(admin, contract, args)
+  contract.get = async function (args) {
+    return await get(admin, contract, args)
   }
-  contract.contains = function* (args) {
-    return yield contains(admin, contract, args)
+  contract.contains = async function (args) {
+    return await contains(admin, contract, args)
   }
-  contract.size = function* (args) {
-    return yield size(admin, contract, args)
+  contract.size = async function (args) {
+    return await size(admin, contract, args)
   }
-  contract.remove = function* (args) {
-    return yield remove(admin, contract, args)
+  contract.remove = async function (args) {
+    return await remove(admin, contract, args)
   }
   return contract
 }
 
-function* put(admin, contract, args) {
-  rest.verbose('put', args)
-  const method = 'put'
-  const result = yield rest.callMethod(admin, contract, method, util.usc(args))
+async function put(admin, contract, args) {
+  const callArgs = {
+    contract,
+    method: 'put',
+    args: util.usc(args)
+  }
+
+  const result = await call(admin, callArgs, options)
   return result
 }
 
-function* get(admin, contract, args) {
-  rest.verbose('get', args)
-  const method = 'get'
-  const result = yield rest.callMethod(admin, contract, method, util.usc(args))
+async function get(admin, contract, args) {
+  const callArgs = {
+    contract,
+    method: 'get',
+    args: util.usc(args)
+  }
+
+  const result = await call(admin, callArgs, options)
   return result[0]
 }
 
-function* contains(admin, contract, args) {
-  rest.verbose('contains', args)
-  const method = 'contains'
-  const result = yield rest.callMethod(admin, contract, method, util.usc(args))
+async function contains(admin, contract, args) {
+  const callArgs = {
+    contract,
+    method: 'contains',
+    args: util.usc(args)
+  }
+
+  const result = await call(admin, callArgs, options)
   return result[0] == true
 }
 
-function* size(admin, contract, args) {
-  rest.verbose('size', args)
-  const method = 'size'
-  const result = yield rest.callMethod(admin, contract, method, util.usc(args))
+async function size(admin, contract, args) {
+  const callArgs = {
+    contract,
+    method: 'size',
+    args: util.usc(args)
+  }
+
+  const result = await call(admin, callArgs, options)
   return parseInt(result[0])
 }
 
-function* remove(admin, contract, args) {
-  rest.verbose('remove', args)
-  const method = 'remove'
-  yield rest.callMethod(admin, contract, method, util.usc(args))
+async function remove(admin, contract, args) {
+  const callArgs = {
+    contract,
+    method: 'remove',
+    args: util.usc(args)
+  }
+
+  await call(admin, callArgs, options)
 }
 
-module.exports = {
+export {
   bind,
   uploadContract,
 }

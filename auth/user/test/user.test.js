@@ -1,47 +1,44 @@
-require('co-mocha');
-const ba = require('blockapps-rest');
-const common = ba.common;
-const api = common.api;
-const config = common.config;
-const rest = ba[`rest${config.restVersion ? config.restVersion : ''}`];
-const util = common.util;
-const should = common.should;
-const assert = common.assert;
-const Promise = common.Promise;
+import { assert } from 'chai';
+import { rest, util } from 'blockapps-rest';
+const { createUser } = rest;
 
-const userJs = require('../user');
-const factory = require('./user.factory');
+import { getYamlFile } from '../../../util/config';
+const config = getYamlFile('config.yaml');
 
-const adminName = util.uid('Admin');
-const adminPassword = '1234';
+import { uploadContract, getUser } from '../user';
+import { createUserArgs } from './user.factory';
+import { getCredentialArgs } from '../../../util/util';
 
-describe('User tests', function() {
+const adminArgs = getCredentialArgs(util.uid(), 'Admin', '1234');
+
+describe('User tests', function () {
   this.timeout(config.timeout);
 
+  const options = { config }
   let admin;
 
-  before(function*() {
-    admin = yield rest.createUser(adminName, adminPassword);
+  before(async function () {
+    admin = await createUser(adminArgs, options);
   });
 
-  it('Create Contract', function* () {
+  it('Create Contract', async function () {
     const uid = util.uid();
     // create the user with constructor args
-    const args = factory.createUserArgs(admin.address, uid);
-    const contract = yield userJs.uploadContract(admin, args);
-    const user = yield contract.getState();
+    const args = createUserArgs(admin.address, uid);
+    const contract = await uploadContract(admin, args);
+    const user = await contract.getState();
     assert.equal(user.account, args.account, 'account');
     assert.equal(user.username, args.username, 'username');
     assert.equal(user.role, args.role, 'role');
   });
 
-  it('Search Contract', function* () {
+  it('Search Contract', async function () {
     const uid = util.uid();
     // create the user with constructor args
-    const args = factory.createUserArgs(admin.address, uid);
-    const contract = yield userJs.uploadContract(admin, args);
+    const args = createUserArgs(admin.address, uid);
+    const contract = await uploadContract(admin, args);
     // search
-    const user = yield userJs.getUser(args.username);
+    const user = await getUser(args.username);
     assert.equal(user.account, args.account, 'account');
     assert.equal(user.username, args.username, 'username');
     assert.equal(user.role, args.role, 'role');

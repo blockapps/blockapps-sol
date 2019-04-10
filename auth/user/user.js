@@ -1,79 +1,104 @@
-const ba = require('blockapps-rest');
-const util = ba.common.util;
-const config = ba.common.config;
-const rest = ba[`rest${config.restVersion ? config.restVersion : ''}`];
+import { rest, util, importer } from 'blockapps-rest';
+const { createContract, getState, call, searchUntil } = rest;
+
+import { getYamlFile } from '../../util/config';
+const config = getYamlFile('config.yaml');
+
+const options = { config };
 
 const contractName = 'User';
-const contractFilename = `${ba.common.cwd}/${config.libPath}/auth/user/contracts/User.sol`;
+const contractFilename = `${util.cwd}/${config.libPath}/auth/user/contracts/User.sol`;
 
-const RestStatus = rest.getFields(`${config.libPath}/rest/contracts/RestStatus.sol`);
-const UserRole = rest.getEnums(`${config.libPath}/auth/user/contracts/UserRole.sol`).UserRole;
+async function uploadContract(admin, args) {
+  const contractArgs = {
+    name: contractName,
+    source: await importer.combine(contractFilename),
+    args: util.usc(args)
+  }
 
-function* uploadContract(admin, args) {
-  const contract = yield rest.uploadContract(admin, contractName, contractFilename, util.usc(args));
-  yield compileSearch(contract);
+  const contract = await createContract(admin, contractArgs, options);
   contract.src = 'removed';
   return bind(admin, contract);
 }
 
 function bind(admin, contract) {
-  contract.getState = function* () {
-    return yield rest.getState(contract);
+  contract.getState = async function () {
+    return await getState(contract, options);
   }
-  contract.authenticate = function* (pwHash) {
-    return yield authenticate(admin, contract, pwHash);
+  contract.authenticate = async function (pwHash) {
+    return await authenticate(admin, contract, pwHash);
   }
   return contract;
 }
 
-function* compileSearch(contract) {
-  rest.verbose('compileSearch', contractName);
-
-  if (yield rest.isSearchable(contract.codeHash)) {
-    return;
-  }
-  const searchable = [contractName];
-  yield rest.compileSearch(searchable, contractName, contractFilename);
-}
-
-function* getUsers(addresses) { // FIXME must break to batches of 50 addresses
+async function getUsers(addresses) { // FIXME must break to batches of 50 addresses
   const csv = util.toCsv(addresses); // generate csv string
-  const results = yield rest.query(`${contractName}?address=in.${csv}`);
+
+  function predicate(response) {
+    return response;
+  }
+
+  const contract = {
+    name: contractName
+  }
+  const results = await searchUntil(contract, predicate, { config, query: { address: `in.${csv}` } });
   return results;
 }
 
-function* getUser(username) {
-  return (yield rest.waitQuery(`${contractName}?username=eq.${username}`, 1))[0];
+async function getUser(username) {
+  function predicate(response) {
+    if (response.length >= 1) {
+      return response;
+    }
+  }
+
+  const contract = {
+    name: contractName
+  }
+
+  const response = (await searchUntil(contract, predicate, { config, query: { username: `eq.${username}` } }))[0];
+  return response;
 }
 
-function* getUserByAddress(address) {
-  return (yield rest.waitQuery(`${contractName}?address=eq.${address}`, 1))[0];
+async function getUserByAddress(address) {
+  function predicate(response) {
+    if (response.length >= 1) {
+      return response;
+    }
+  }
+
+  const contract = {
+    name: contractName, address
+  }
+  const response = (await searchUntil(contract, predicate, { config, query: { address: `eq.${address}` } }))[0];
+  return response;
 }
 
-function* authenticate(admin, contract, pwHash) {
-  rest.verbose('authenticate', pwHash);
+async function authenticate(admin, contract, pwHash) {
   // function authenticate(bytes32 _pwHash) return (bool) {
-  const method = 'authenticate';
   const args = {
-    _pwHash: pwHash,
+    pwHash: pwHash,
   };
-  const result = yield rest.callMethod(admin, contract, method, args);
+  const callArgs = {
+    contract,
+    method: 'authenticate',
+    args: util.usc(args)
+  }
+  const result = await call(admin, callArgs, options);
   const isAuthenticated = (result[0] === true);
   return isAuthenticated;
 }
 
 
-module.exports = {
-  uploadContract: uploadContract,
-  bind: bind,
-  compileSearch: compileSearch,
-
+export {
+  uploadContract,
+  bind,
   // constants
-  contractName: contractName,
+  contractName,
 
   // business logic
-  authenticate: authenticate,
-  getUserByAddress: getUserByAddress,
-  getUsers: getUsers,
-  getUser: getUser,
+  authenticate,
+  getUserByAddress,
+  getUsers,
+  getUser
 };

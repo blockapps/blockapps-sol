@@ -1,9 +1,10 @@
 import "../../../rest/contracts/RestStatus.sol";
+import "./EventLogType.sol";
 
 /**
 * Permission Manager for all
 */
-contract PermissionManager is RestStatus {
+contract PermissionManager is RestStatus, EventLogType {
   // master account
   address master;
   // owner account
@@ -28,14 +29,6 @@ contract PermissionManager is RestStatus {
     address adrs;
     uint permissions;
     uint result;
-  }
-
-  // event log type
-  enum EventLogType { // TODO expose -LS
-    NULL,
-    GRANT,
-    REVOKE,
-    CHECK
   }
 
   // event log
