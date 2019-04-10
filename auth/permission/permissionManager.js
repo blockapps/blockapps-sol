@@ -92,7 +92,7 @@ async function grant(admin, contract, args) {
 
   const [restStatus, permissions] = await call(admin, callArgs, options);
   if (restStatus != RestStatus.OK) {
-    throw new Error(restStatus);
+    throw new RestError(restStatus, callArgs.method, callArgs.args);
   }
   return permissions;
 }
@@ -141,7 +141,6 @@ async function revoke(admin, contract, args) {
   }
 
   const [restStatus] = await call(admin, callArgs, options);
-  // TODO: reststatus
   if (restStatus != RestStatus.OK) {
     throw new RestError(restStatus, callArgs.method, callArgs.args);
   }

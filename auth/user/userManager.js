@@ -1,3 +1,4 @@
+import RestStatus from 'http-status-codes';
 import { rest, util, importer } from 'blockapps-rest';
 const { createContract, getState, call, RestError } = rest;
 
@@ -9,7 +10,6 @@ const contractFilename = `${util.cwd}/${config.libPath}/auth/user/contracts/User
 
 const options = { config };
 
-// TODO: (remove if not in use) const RestStatus = rest.getFields(`${config.libPath}/rest/contracts/RestStatus.sol`);
 import * as userJs from './user';
 
 async function uploadContract(admin) {
@@ -60,8 +60,7 @@ async function createUser(admin, contract, args) {
 
   // create the user, with the eth account
   const [restStatus] = await call(admin, callArgs, options);
-  // TODO:  add RestStatus api call. No magic numbers
-  if (restStatus != '201') {
+  if (restStatus != RestStatus.CREATED) {
     throw new RestError(restStatus, callArgs.method, callArgs.args);
   }
   // block until the user shows up in search
@@ -101,7 +100,7 @@ async function getUser(admin, contract, username) {
   // get the use address
   const [address] = await call(admin, callArgs, options);
   if (address == 0) {
-    throw new RestError('404', callArgs.method, args);
+    throw new RestError(RestStatus.NOT_FOUND, callArgs.method, args);
   }
   // found - query for the full user record
   return await userJs.getUserByAddress(address);
@@ -126,7 +125,7 @@ async function authenticate(admin, contract, args) {
   return isOK;
 }
 
-export {
+export default {
   uploadContract,
   contractName,
   bind
