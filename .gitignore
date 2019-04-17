@@ -68,3 +68,6 @@ typings/
 
 # dist
 dist
+
+# lock file (using yarn)
+package-lock.json
