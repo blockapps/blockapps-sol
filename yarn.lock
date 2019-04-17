@@ -929,9 +929,9 @@ binary-extensions@^1.0.0:
   integrity sha512-Un7MIEDdUC5gNpcGDV97op1Ywk748MpHcFTHoYs6qnj1Z3j7I53VG3nwZhKzoBZmbdRNnb6WRdFlwl7tSDuZGw==
 
 blockapps-rest@alpha:
-  version "7.2.0"
-  resolved "https://registry.yarnpkg.com/blockapps-rest/-/blockapps-rest-7.2.0.tgz#682a0c0c8e7bc757a0ccb1691dff2254a2d9bf57"
-  integrity sha512-PGo9C/kbbQgyz0SFfdVt9KcIlB8C6072W3KYmnIIbGef0tqJW4v/IaEb4T3v//fmkAPBwM0zIrVBlxxE6SQqIw==
+  version "7.3.0"
+  resolved "https://registry.yarnpkg.com/blockapps-rest/-/blockapps-rest-7.3.0.tgz#c9c583ec1cf128fdf8a9be52b380bb2f09abaef7"
+  integrity sha512-A3tJowWb8qufZKzJAkFd4Vih9oT9ThhPa8CGIZraZiSPasJosHo923yX+I9Wra9SopJipFsDEGhKJi4ZeiYPSw==
   dependencies:
     axios "0.18.0"
     bignumber.js "2.4.0"
