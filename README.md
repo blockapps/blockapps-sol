@@ -10,8 +10,8 @@ Start STRATO with this command:
     NODE_HOST=localhost:8080
     OAUTH_ENABLED=true
     OAUTH_DISCOVERY_URL=https://keycloak.blockapps.net/auth/realms/track-and-trace/.well-known/openid-configuration
-    OAUTH_CLIENT_ID=localhost-8080
-    OAUTH_CLIENT_SECRET=a2efc75d-5915-4cf9-bfd0-08981899f8fc
+    OAUTH_CLIENT_ID=<OAUTH_CLIENT_ID_HERE> 
+    OAUTH_CLIENT_SECRET=<OAUTH_CLIENT_SECRET_HERE>
     ./strato --single`
 
 
