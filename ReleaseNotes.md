@@ -1,3 +1,11 @@
+### Version: 3.0.0
+
+#### Major upgrades
+* All the STRATO api endpoints protected with oauth. So, Tokens are passing in every API.
+* All the testcases are now compatible with oauth.
+* Must use `blockapps-rest` `^7.4.3`
+
+------------
 ### Version: 2.0.1
 
 #### Minor upgrades
