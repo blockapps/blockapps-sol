@@ -1,3 +1,9 @@
+### Version: 3.1.0
+
+#### Major upgrades
+* Must use `blockapps-rest` `^7.4.4`
+* `getArray, getValues` added to Hashmaps
+
 ### Version: 3.0.0
 
 #### Major upgrades

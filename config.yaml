@@ -1,7 +1,7 @@
 apiDebug: true
 timeout: 120000
 libPath: lib
-restVersion: 5
+restVersion: 7
 
 # WARNING - extra strict syntax
 # DO NOT change the nodes order

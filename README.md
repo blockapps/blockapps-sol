@@ -32,3 +32,12 @@ cd blockapps-sol
 yarn install
 yarn test
 ```
+
+
+HTTP_PORT=8080 \
+NODE_HOST=localhost:8080 \
+OAUTH_ENABLED=true \
+OAUTH_DISCOVERY_URL=https://keycloak.blockapps.net/auth/realms/track-and-trace/.well-known/openid-configuration \
+OAUTH_CLIENT_ID=tt-localhost \
+OAUTH_CLIENT_SECRET=10352ea6-f286-47cf-936c-2cb7ce6c1c39 \
+./strato --single

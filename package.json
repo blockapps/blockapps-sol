@@ -1,6 +1,6 @@
 {
   "name": "blockapps-sol",
-  "version": "2.0.1",
+  "version": "3.0.1",
   "description": "BlockApps Solidity Lib",
   "main": "",
   "scripts": {
@@ -28,7 +28,7 @@
     "@babel/node": "^7.2.2",
     "@babel/preset-env": "^7.3.4",
     "@babel/register": "^7.0.0",
-    "blockapps-rest": "^7.4.3",
+    "blockapps-rest": "^7.4.4",
     "chai": "^4.0.2",
     "dotenv": "^8.0.0",
     "eslint": "^4.19.1",
